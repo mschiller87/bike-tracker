@@ -1,0 +1,54 @@
+---
+layout: default
+title: Live Tracker
+---
+
+<div style="padding: 20px; text-align: center; max-width: 800px; margin: 0 auto;">
+    <h2 style="font-size: 2rem; margin-bottom: 10px; text-transform: uppercase;">Live GPS Tracker</h2>
+    <p style="color: #666; margin-bottom: 20px;">Blue = Planned Route | Orange = Actual Progress</p>
+</div>
+
+<div id="map" style="width: 100%; height: 600px; border-bottom: 5px solid #121212; background-color: #e5e5e5;"></div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet-gpx/1.7.0/gpx.min.js"></script>
+
+<script>
+    var map = L.map('map', { preferCanvas: true }).setView([39.8283, -98.5795], 4);
+
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+        maxZoom: 19,
+        attribution: '&copy; OpenStreetMap &copy; CARTO'
+    }).addTo(map);
+
+    var myRoutes = [
+        'TA_01_EB_Main_2022.gpx', 'TA_02_EB_Main_2018.gpx', 'TA_03_EB_Main_2022.gpx',
+        'TA_04_EB_Main_2020.gpx', 'TA_05_EB_Main_2018.gpx', 'TA_06_EB_Main_2018.gpx',
+        'TA_07_EB_Main_2019.gpx', 'TA_08_EB_Main_2019.gpx', 'TA_09_EB_Main_2020.gpx',
+        'R66_01_EB_Main_2020.gpx', 'Great_Lake-to-Lake_Trails_Route__1.gpx',
+        'Hudson_Valley_EST.gpx', 'Erie_Canal_EST_Buffalo-Albany.gpx'
+    ];
+
+    myRoutes.forEach(function(routeFile) {
+        new L.GPX(routeFile, {
+            async: true,
+            marker_options: { startIconUrl: '', endIconUrl: '', shadowUrl: '' },
+            polyline_options: { color: '#0039A6', weight: 5, opacity: 0.8 }
+        }).addTo(map); 
+    });
+
+    fetch('strava_rides.geojson')
+        .then(response => response.json())
+        .then(data => {
+            L.geoJSON(data, {
+                style: function (feature) {
+                    return { color: '#FF6319', weight: 5, opacity: 1.0 };
+                },
+                onEachFeature: function (feature, layer) {
+                    var distMiles = (feature.properties.distance * 0.000621371).toFixed(1);
+                    layer.bindPopup("<b>" + feature.properties.name + "</b><br>" + distMiles + " miles");
+                }
+            }).addTo(map);
+        })
+        .catch(err => console.log("No Strava data found yet."));
+</script>
