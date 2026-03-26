@@ -3,6 +3,7 @@ layout: default
 title: "Where the River Meets the Pacific"
 location: "Astoria, OR"
 image: "https://mschiller87.github.io/bike-tracker/images/bike.jpg"
+total_miles: 50
 ---
 
 Today marked the official beginning! Dipping the rear tire into the Pacific Ocean felt surreal after months of planning. 
