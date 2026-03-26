@@ -3,187 +3,124 @@ layout: default
 ---
 
 <style>
-    /* The Timeline Wrapper */
-    .timeline-feed {
-        max-width: 800px;
-        margin: 0 auto;
-        padding: 40px 20px 40px 40px; 
+    /* Abstract Subway Dashboard CSS */
+    .dashboard-wrapper {
+        background-color: #fff;
+        padding: 60px 20px;
+        border-bottom: 2px solid #e0e0e0;
+        text-align: center;
     }
-
-    /* The Continuous Line */
-    .timeline-stop {
-        border-left: 6px solid #121212; 
-        padding-left: 35px; 
-        padding-bottom: 50px; 
+    .abstract-map {
         position: relative;
+        max-width: 700px;
+        margin: 0 auto;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
     }
-    
-    .timeline-stop:last-child {
-        border-left-color: transparent;
-    }
-
-    /* The Subway Circle */
-    .timeline-stop::before {
+    /* The main horizontal track */
+    .abstract-map::before {
         content: '';
         position: absolute;
-        left: -15px; 
-        top: 20px; 
-        width: 12px;
-        height: 12px;
-        background: #ffffff;
-        border: 6px solid #0039A6; 
-        border-radius: 50%;
+        top: 50%;
+        left: 0;
+        right: 0;
+        height: 8px;
+        background-color: #0039A6; /* MTA Blue */
+        transform: translateY(-50%);
+        z-index: 1;
+    }
+    /* The progress fill line (We will automate this later, for now it's static) */
+    .abstract-map::after {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 0;
+        width: 15%; /* This represents how far you've gone! */
+        height: 8px;
+        background-color: #FF6319; /* MTA Orange */
+        transform: translateY(-50%);
         z-index: 2;
     }
-
-    /* The Scannable Card */
-    .post-card {
-        display: flex;
-        flex-direction: row;
-        align-items: flex-start;
-        gap: 20px;
-        background: #fff;
-        border: 1px solid #e0e0e0;
-        padding: 20px;
-        border-left: 6px solid #FF6319; 
-        box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+    .station {
         position: relative;
+        z-index: 3;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
     }
-    
-    /* The Thumbnail Image */
-    .post-thumbnail {
-        width: 150px;
-        height: 150px;
-        flex-shrink: 0;
-        overflow: hidden;
-        background-color: #f4f4f4;
+    .station-dot {
+        width: 20px;
+        height: 20px;
+        background-color: #fff;
+        border: 6px solid #121212;
+        border-radius: 50%;
+        margin-bottom: 10px;
     }
-    .post-thumbnail img {
-        width: 100%;
-        height: 100%;
-        object-fit: cover; 
+    .station.current .station-dot {
+        border-color: #FF6319; /* Highlights your current location */
+        box-shadow: 0 0 0 4px rgba(255, 99, 25, 0.2);
     }
-
-    /* The Text Content */
-    .post-content {
-        flex: 1;
-    }
-    .post-meta {
-        font-weight: bold;
-        color: #555;
-        text-transform: uppercase;
-        font-size: 0.75rem;
-        letter-spacing: 1px;
-        margin-bottom: 8px;
-    }
-    .post-content h2 {
-        font-size: 1.5rem;
-        margin: 0 0 10px 0;
-        letter-spacing: -0.5px;
-    }
-    .post-content p {
-        font-size: 1rem;
-        line-height: 1.5;
-        color: #555;
-        margin-bottom: 15px;
-    }
-    .read-more {
-        display: inline-block;
-        background-color: #121212;
-        color: white;
-        text-decoration: none;
-        padding: 6px 12px;
+    .station-label {
         font-size: 0.85rem;
         font-weight: bold;
         text-transform: uppercase;
+        color: #121212;
+        background: #fff;
+        padding: 2px 5px;
     }
+    
+    /* ... [Your existing Timeline CSS from the previous step goes here] ... */
+    .timeline-feed { max-width: 800px; margin: 0 auto; padding: 40px 20px 40px 40px; }
+    .timeline-stop { border-left: 6px solid #121212; padding-left: 35px; padding-bottom: 50px; position: relative; }
+    .timeline-stop:last-child { border-left-color: transparent; }
+    .timeline-stop::before { content: ''; position: absolute; left: -15px; top: 20px; width: 12px; height: 12px; background: #ffffff; border: 6px solid #0039A6; border-radius: 50%; z-index: 2; }
+    .post-card { display: flex; flex-direction: row; align-items: flex-start; gap: 20px; background: #fff; border: 1px solid #e0e0e0; padding: 20px; border-left: 6px solid #FF6319; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
+    .post-thumbnail { width: 150px; height: 150px; flex-shrink: 0; overflow: hidden; background-color: #f4f4f4; }
+    .post-thumbnail img { width: 100%; height: 100%; object-fit: cover; }
+    .post-content { flex: 1; }
+    .post-meta { font-weight: bold; color: #555; text-transform: uppercase; font-size: 0.75rem; letter-spacing: 1px; margin-bottom: 8px; }
+    .post-content h2 { font-size: 1.5rem; margin: 0 0 10px 0; letter-spacing: -0.5px; }
+    .post-content p { font-size: 1rem; line-height: 1.5; color: #555; margin-bottom: 15px; }
+    .read-more { display: inline-block; background-color: #121212; color: white; text-decoration: none; padding: 6px 12px; font-size: 0.85rem; font-weight: bold; text-transform: uppercase; }
     .read-more:hover { background-color: #FF6319; }
-
-    /* Mobile responsiveness */
-    @media (max-width: 600px) {
-        .timeline-feed { padding-left: 20px; }
-        .timeline-stop { padding-left: 25px; border-left-width: 4px; }
-        .timeline-stop::before { left: -11px; width: 10px; height: 10px; border-width: 4px; }
-        .post-card { flex-direction: column; }
-        .post-thumbnail { width: 100%; height: 200px; }
-    }
+    @media (max-width: 600px) { .timeline-feed { padding-left: 20px; } .timeline-stop { padding-left: 25px; border-left-width: 4px; } .timeline-stop::before { left: -11px; width: 10px; height: 10px; border-width: 4px; } .post-card { flex-direction: column; } .post-thumbnail { width: 100%; height: 200px; } }
 </style>
 
-<div id="map" style="width: 100%; height: 400px; border-bottom: 1px solid #ccc; background-color: #e5e5e5;"></div>
+<div class="dashboard-wrapper">
+    <h2 style="font-size: 1.2rem; margin-top: 0; margin-bottom: 40px; text-transform: uppercase; color: #555; letter-spacing: 1px;">Overall Progress</h2>
+    <div class="abstract-map">
+        <div class="station start">
+            <div class="station-dot"></div>
+            <span class="station-label">Astoria, OR</span>
+        </div>
+        <div class="station current">
+            <div class="station-dot"></div>
+            <span class="station-label">Tillamook</span>
+        </div>
+        <div class="station end">
+            <div class="station-dot"></div>
+            <span class="station-label">New York, NY</span>
+        </div>
+    </div>
+</div>
 
 <main class="timeline-feed">
-    
     {% for post in site.posts %}
     <div class="timeline-stop">
         <article class="post-card">
-            
             {% if post.image %}
             <div class="post-thumbnail">
                 <img src="{{ post.image }}" alt="Thumbnail for {{ post.title }}">
             </div>
             {% endif %}
-
             <div class="post-content">
                 <div class="post-meta">{{ post.date | date: "%b %d" }} &nbsp;&bull;&nbsp; {{ post.location }}</div>
                 <h2>{{ post.title }}</h2>
                 <p>{{ post.content | strip_html | truncatewords: 30 }}</p>
                 <a href="{{ post.url }}" class="read-more">Read Entry &rarr;</a>
             </div>
-
         </article>
     </div>
     {% endfor %}
-
 </main>
-
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet-gpx/1.7.0/gpx.min.js"></script>
-
-<script>
-    var map = L.map('map', { preferCanvas: true }).setView([39.8283, -98.5795], 4);
-
-    L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
-        maxZoom: 19,
-        attribution: '&copy; OpenStreetMap &copy; CARTO'
-    }).addTo(map);
-
-    var myRoutes = [
-        'TA_01_EB_Main_2022.gpx', 'TA_02_EB_Main_2018.gpx', 'TA_03_EB_Main_2022.gpx',
-        'TA_04_EB_Main_2020.gpx', 'TA_05_EB_Main_2018.gpx', 'TA_06_EB_Main_2018.gpx',
-        'TA_07_EB_Main_2019.gpx', 'TA_08_EB_Main_2019.gpx', 'TA_09_EB_Main_2020.gpx',
-        'R66_01_EB_Main_2020.gpx', 'Great_Lake-to-Lake_Trails_Route__1.gpx',
-        'Hudson_Valley_EST.gpx', 'Erie_Canal_EST_Buffalo-Albany.gpx'
-    ];
-
-    myRoutes.forEach(function(routeFile) {
-        new L.GPX(routeFile, {
-            async: true,
-            marker_options: { startIconUrl: '', endIconUrl: '', shadowUrl: '' },
-            polyline_options: {
-                color: '#0039A6', // MTA Blue for the Planned Route
-                weight: 5,      
-                opacity: 0.8
-            }
-        }).addTo(map); 
-    });
-
-    // Fetch Automated Strava Data
-    fetch('strava_rides.geojson')
-        .then(response => response.json())
-        .then(data => {
-            L.geoJSON(data, {
-                style: function (feature) {
-                    return {
-                        color: '#FF6319', // MTA Orange for Actual Ridden Progress!
-                        weight: 5,
-                        opacity: 1.0
-                    };
-                },
-                onEachFeature: function (feature, layer) {
-                    var distMiles = (feature.properties.distance * 0.000621371).toFixed(1);
-                    layer.bindPopup("<b>" + feature.properties.name + "</b><br>" + distMiles + " miles");
-                }
-            }).addTo(map);
-        })
-        .catch(err => console.log("No Strava data found yet."));
-</script>
