@@ -1,0 +1,41 @@
+name: Update Strava Data
+
+on:
+  schedule:
+    # This tells the robot to run automatically every day at 8:00 AM UTC (Midnight PST / 3:00 AM EST)
+    - cron: '0 8 * * *'
+  # This line adds a "Run workflow" button so you can trigger it manually whenever you want!
+  workflow_dispatch: 
+
+jobs:
+  update-map:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.x'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install requests polyline
+
+      - name: Run Strava update script
+        env:
+          STRAVA_CLIENT_ID: ${{ secrets.STRAVA_CLIENT_ID }}
+          STRAVA_CLIENT_SECRET: ${{ secrets.STRAVA_CLIENT_SECRET }}
+          STRAVA_REFRESH_TOKEN: ${{ secrets.STRAVA_REFRESH_TOKEN }}
+        run: python update_strava.py
+
+      - name: Commit and push changes
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add strava_rides.geojson
+          git commit -m "Auto-update Strava rides" || echo "No changes to commit"
+          git push
