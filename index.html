@@ -15,10 +15,10 @@ layout: default
         display: flex;
         justify-content: space-between;
         align-items: flex-end;
-        border-bottom: 6px solid #121212; /* Bold, solid subway track */
+        border-bottom: 6px solid #121212; 
         padding-bottom: 0;
         position: relative;
-        margin-top: 120px; /* Leaves room for the angled text above */
+        margin-top: 120px; 
     }
 
     .station-node {
@@ -32,11 +32,11 @@ layout: default
     /* The Station Circles */
     .station-dot {
         position: absolute;
-        bottom: -11px; /* Centers the dot perfectly on the 6px track */
+        bottom: -11px; 
         width: 16px;
         height: 16px;
         background-color: #fff;
-        border: 5px solid #121212; /* Standard past stop */
+        border: 5px solid #121212; 
         border-radius: 50%;
         z-index: 2;
     }
@@ -55,7 +55,7 @@ layout: default
     /* The Sleek Angled Text */
     .angled-label {
         position: absolute;
-        bottom: 25px; /* Lifts it above the dot */
+        bottom: 25px; 
         left: 50%;
         transform-origin: bottom left;
         transform: rotate(-45deg);
@@ -79,7 +79,7 @@ layout: default
     /* Mileage below the track */
     .mileage-stats {
         position: absolute;
-        top: 25px; /* Drops it below the main track */
+        top: 25px; 
         font-size: 0.85rem;
         font-weight: bold;
         color: #555;
@@ -88,7 +88,7 @@ layout: default
         text-transform: uppercase;
     }
 
-    /* ... [KEEP YOUR EXISTING TIMELINE & POST-CARD CSS HERE] ... */
+    /* Timeline & Post-Card CSS */
     .timeline-feed { max-width: 800px; margin: 0 auto; padding: 40px 20px 40px 40px; }
     .timeline-stop { border-left: 6px solid #121212; padding-left: 35px; padding-bottom: 50px; position: relative; }
     .timeline-stop:last-child { border-left-color: transparent; }
@@ -102,7 +102,15 @@ layout: default
     .post-content p { font-size: 1rem; line-height: 1.5; color: #555; margin-bottom: 15px; }
     .read-more { display: inline-block; background-color: #121212; color: white; text-decoration: none; padding: 6px 12px; font-size: 0.85rem; font-weight: bold; text-transform: uppercase; }
     .read-more:hover { background-color: #FF6319; }
-    @media (max-width: 600px) { .timeline-feed { padding-left: 20px; } .timeline-stop { padding-left: 25px; border-left-width: 4px; } .timeline-stop::before { left: -11px; width: 10px; height: 10px; border-width: 4px; } .post-card { flex-direction: column; } .post-thumbnail { width: 100%; height: 200px; } }
+    
+    @media (max-width: 600px) { 
+        .timeline-feed { padding-left: 20px; } 
+        .timeline-stop { padding-left: 25px; border-left-width: 4px; } 
+        .timeline-stop::before { left: -11px; width: 10px; height: 10px; border-width: 4px; } 
+        .post-card { flex-direction: column; } 
+        .post-thumbnail { width: 100%; height: 200px; } 
+        .station-node { width: 33%; /* Adjusts spacing on mobile */ }
+    }
 </style>
 
 <div class="strip-map-container">
@@ -138,21 +146,26 @@ layout: default
 </div>
 
 <main class="timeline-feed">
+    
     {% for post in site.posts %}
     <div class="timeline-stop">
         <article class="post-card">
+            
             {% if post.image %}
             <div class="post-thumbnail">
                 <img src="{{ post.image }}" alt="Thumbnail for {{ post.title }}">
             </div>
             {% endif %}
+
             <div class="post-content">
                 <div class="post-meta">{{ post.date | date: "%b %d" }} &nbsp;&bull;&nbsp; {{ post.location }}</div>
                 <h2>{{ post.title }}</h2>
                 <p>{{ post.content | strip_html | truncatewords: 30 }}</p>
                 <a href="{{ post.url }}" class="read-more">Read Entry &rarr;</a>
             </div>
+
         </article>
     </div>
     {% endfor %}
+
 </main>
