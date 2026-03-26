@@ -8,4 +8,4 @@ Today marked the official beginning! Dipping the rear tire into the Pacific Ocea
 
 The weather held up beautifully, though a stiff coastal crosswind made the final ten miles a true grind. I’ve pitched the tent, and my legs are definitely feeling the reality of what lies ahead.
 
-![My Bike](/bike-tracker/images/bike.jpg)
+![My Bike](../images/bike.jpg)
