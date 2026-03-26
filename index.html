@@ -70,7 +70,7 @@
 
         /* Article Feed */
         .journal-feed {
-            max-width: 700px; /* Golden reading width */
+            max-width: 700px; 
             margin: 0 auto;
             padding: 0 20px 100px 20px;
         }
@@ -97,6 +97,25 @@
             line-height: 1.2;
             margin: 0 0 20px 0;
         }
+        
+        /* Thumbnail Image Styling */
+        .article-image-container {
+            margin-bottom: 25px;
+        }
+        .article-image-container img {
+            width: 100%;
+            height: auto;
+            border: 1px solid #eee;
+            display: block;
+        }
+        .image-caption {
+            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            font-size: 0.8rem;
+            color: #777;
+            margin-top: 8px;
+            text-align: left;
+        }
+
         article p {
             font-size: 1.15rem;
             line-height: 1.7;
@@ -109,7 +128,7 @@
 
     <header>
         <h1>The Transcontinental</h1>
-        <p>Astoria, OR to New York, NY &nbsp;|&nbsp; Summer 2024</p>
+        <p>Pacific Ocean to Atlantic Ocean &nbsp;|&nbsp; Summer 2026</p>
     </header>
 
     <div class="map-container">
@@ -122,6 +141,12 @@
         <article>
             <div class="article-meta">June 1 <span>&nbsp;|&nbsp; Astoria to Tillamook, OR</span></div>
             <h2>Where the River Meets the Pacific</h2>
+            
+            <div class="article-image-container">
+                <img src="https://images.unsplash.com/photo-1549419137-b4dbabfaebc6?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80" alt="Oregon Coastline">
+                <div class="image-caption">The view of the Pacific Ocean just south of Astoria, Oregon.</div>
+            </div>
+
             <p>Today marked the official beginning. Dipping the rear tire into the Pacific Ocean at Astoria felt surreal after months of staring at spreadsheets and GPX files. The Oregon coast immediately delivered on its promise of dramatic views and relentless rolling hills.</p>
             <p>The weather held up beautifully, though a stiff coastal crosswind made the final ten miles into Cape Lookout State Park a true grind. I’ve pitched the tent in the hiker/biker site, and my legs are definitely feeling the reality of what lies ahead.</p>
         </article>
@@ -129,6 +154,12 @@
         <article>
             <div class="article-meta">May 31 <span>&nbsp;|&nbsp; Pre-Departure</span></div>
             <h2>The Weight of the Panniers</h2>
+            
+            <div class="article-image-container">
+                <img src="https://images.unsplash.com/photo-1555661958-3d5f191b93f1?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80" alt="Loaded touring bike">
+                <div class="image-caption">Final gear check before hitting the road.</div>
+            </div>
+
             <p>Everything is packed. The bike feels like it weighs as much as a small motorcycle. It is amazing how much thought goes into deciding whether to carry an extra pair of socks or save the 40 grams. Tomorrow morning, we roll out.</p>
         </article>
 
@@ -145,6 +176,7 @@
             attribution: '© OpenStreetMap'
         }).addTo(map);
 
+        // Updated GPX files array including your new Eastern routes
         var myRoutes = [
             'TA_01_EB_Main_2022.gpx',
             'TA_02_EB_Main_2018.gpx',
@@ -170,7 +202,7 @@
                     shadowUrl: ''
                 },
                 polyline_options: {
-                    color: '#2c3e50', // Changed the route color to a sleek navy/slate to match the NYT vibe
+                    color: '#2c3e50', 
                     weight: 3,      
                     opacity: 0.6
                 }
