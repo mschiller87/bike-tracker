@@ -3,74 +3,96 @@ layout: default
 ---
 
 <style>
-    /* Abstract Subway Dashboard CSS */
-    .dashboard-wrapper {
-        background-color: #fff;
-        padding: 60px 20px;
-        border-bottom: 2px solid #e0e0e0;
-        text-align: center;
+    /* NYC LED Train Display CSS */
+    .led-dashboard {
+        background-color: #050505; /* Deep black LED background */
+        padding: 40px 20px 80px 20px;
+        overflow-x: auto; /* Allows horizontal scrolling on small phones */
+        font-family: 'Courier New', Courier, monospace; /* Gives it the digital dotted look */
+        border-bottom: 4px solid #333;
     }
-    .abstract-map {
+    
+    .led-header {
+        color: #ff3300; /* Bright LED Red */
+        font-size: 2.5rem;
+        font-weight: bold;
+        text-transform: uppercase;
+        letter-spacing: 2px;
+        margin: 0 0 120px 20px;
+        text-shadow: 0 0 8px rgba(255, 51, 0, 0.6);
+    }
+
+    .track-container {
         position: relative;
-        max-width: 700px;
-        margin: 0 auto;
+        min-width: 600px; /* Prevents squishing on mobile */
         display: flex;
         justify-content: space-between;
-        align-items: center;
+        align-items: flex-end;
+        border-bottom: 5px solid #aaa; /* The main grey track line */
+        padding-bottom: 0;
+        margin: 0 20px;
     }
-    /* The main horizontal track */
-    .abstract-map::before {
-        content: '';
-        position: absolute;
-        top: 50%;
-        left: 0;
-        right: 0;
-        height: 8px;
-        background-color: #0039A6; /* MTA Blue */
-        transform: translateY(-50%);
-        z-index: 1;
-    }
-    /* The progress fill line (We will automate this later, for now it's static) */
-    .abstract-map::after {
-        content: '';
-        position: absolute;
-        top: 50%;
-        left: 0;
-        width: 15%; /* This represents how far you've gone! */
-        height: 8px;
-        background-color: #FF6319; /* MTA Orange */
-        transform: translateY(-50%);
-        z-index: 2;
-    }
-    .station {
+
+    .station-node {
         position: relative;
-        z-index: 3;
+        width: 25%;
         display: flex;
         flex-direction: column;
         align-items: center;
     }
-    .station-dot {
-        width: 20px;
-        height: 20px;
-        background-color: #fff;
-        border: 6px solid #121212;
-        border-radius: 50%;
-        margin-bottom: 10px;
+
+    /* The diagonal branch pointing to the station */
+    .station-node::before {
+        content: '';
+        position: absolute;
+        bottom: 0px;
+        left: 50%;
+        width: 40px;
+        height: 5px;
+        background-color: #aaa;
+        transform-origin: left bottom;
+        transform: rotate(-45deg); 
     }
-    .station.current .station-dot {
-        border-color: #FF6319; /* Highlights your current location */
-        box-shadow: 0 0 0 4px rgba(255, 99, 25, 0.2);
+
+    /* The Angled LED Text */
+    .angled-text {
+        position: absolute;
+        bottom: 15px;
+        left: 50%;
+        transform-origin: left bottom;
+        transform: rotate(-45deg);
+        padding-left: 20px; /* Pushes text past the grey branch */
+        color: #FF6319; /* MTA Orange */
+        font-weight: bold;
+        font-size: 1.3rem;
+        white-space: nowrap;
+        text-shadow: 0 0 6px rgba(255, 99, 25, 0.8);
     }
-    .station-label {
+
+    /* The green sub-text mimicking subway transfer routes */
+    .angled-subtext {
+        color: #32CD32; /* LED Green */
+        font-size: 0.9rem;
+        display: block;
+        margin-top: 4px;
+        text-shadow: 0 0 5px rgba(50, 205, 50, 0.6);
+    }
+
+    /* Mileage below the track */
+    .mileage-label {
+        position: absolute;
+        top: 15px; /* Drops it below the main grey line */
+        color: #fff;
+        font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
         font-size: 0.85rem;
         font-weight: bold;
-        text-transform: uppercase;
-        color: #121212;
-        background: #fff;
-        padding: 2px 5px;
+        letter-spacing: 1px;
     }
-    
-    /* ... [Your existing Timeline CSS from the previous step goes here] ... */
+
+    /* Make the final NYC stop red! */
+    .final-node .angled-text { color: #ff3300; text-shadow: 0 0 6px rgba(255, 51, 0, 0.8); }
+
+    /* ... [KEEP YOUR EXISTING TIMELINE & POST-CARD CSS HERE] ... */
     .timeline-feed { max-width: 800px; margin: 0 auto; padding: 40px 20px 40px 40px; }
     .timeline-stop { border-left: 6px solid #121212; padding-left: 35px; padding-bottom: 50px; position: relative; }
     .timeline-stop:last-child { border-left-color: transparent; }
@@ -87,23 +109,39 @@ layout: default
     @media (max-width: 600px) { .timeline-feed { padding-left: 20px; } .timeline-stop { padding-left: 25px; border-left-width: 4px; } .timeline-stop::before { left: -11px; width: 10px; height: 10px; border-width: 4px; } .post-card { flex-direction: column; } .post-thumbnail { width: 100%; height: 200px; } }
 </style>
 
-<div class="dashboard-wrapper">
-    <h2 style="font-size: 1.2rem; margin-top: 0; margin-bottom: 40px; text-transform: uppercase; color: #555; letter-spacing: 1px;">Overall Progress</h2>
-    <div class="abstract-map">
-        <div class="station start">
-            <div class="station-dot"></div>
-            <span class="station-label">Astoria, OR</span>
+<div class="led-dashboard">
+    <h2 class="led-header">Next Stop</h2>
+    
+    <div class="track-container">
+        
+        {% assign recent_posts = site.posts | slice: 0, 3 | reverse %}
+        
+        {% for post in recent_posts %}
+        <div class="station-node">
+            <div class="angled-text">
+                {{ post.location }}
+                <span class="angled-subtext">{{ post.date | date: "%b-%d" }}</span>
+            </div>
+            <div class="mileage-label">{{ post.total_miles | default: 0 }} Miles</div>
         </div>
-        <div class="station current">
-            <div class="station-dot"></div>
-            <span class="station-label">Tillamook</span>
+        {% endfor %}
+
+        <div class="station-node final-node">
+            <div class="angled-text">
+                New York, NY
+                <span class="angled-subtext">END-OF-LINE</span>
+            </div>
+            
+            {% assign current_total = site.posts.first.total_miles | default: 0 %}
+            {% assign miles_to_go = 3400 | minus: current_total %}
+            
+            <div class="mileage-label">{{ miles_to_go }} to go</div>
         </div>
-        <div class="station end">
-            <div class="station-dot"></div>
-            <span class="station-label">New York, NY</span>
-        </div>
+
     </div>
 </div>
+
+<main class="timeline-feed">
 
 <main class="timeline-feed">
     {% for post in site.posts %}
