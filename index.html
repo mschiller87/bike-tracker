@@ -1,8 +1,39 @@
----
-layout: default
----
-
 <style>
+    /* The Timeline Wrapper */
+    .timeline-feed {
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 40px 20px 40px 40px; /* Extra left padding for the line */
+    }
+
+    /* The Continuous Line */
+    .timeline-stop {
+        border-left: 6px solid #121212; /* The thick subway track */
+        padding-left: 35px; /* Pushes the card to the right */
+        padding-bottom: 50px; /* Space between posts */
+        position: relative;
+    }
+    
+    /* Hide the line on the very last item so it doesn't trail off into nowhere */
+    .timeline-stop:last-child {
+        border-left-color: transparent;
+    }
+
+    /* The Subway Circle */
+    .timeline-stop::before {
+        content: '';
+        position: absolute;
+        left: -15px; /* Centers the circle perfectly over the 6px line */
+        top: 20px; /* Aligns the circle near the top of the card */
+        width: 12px;
+        height: 12px;
+        background: #ffffff;
+        border: 6px solid #0039A6; /* MTA Blue for the station stop! */
+        border-radius: 50%;
+        z-index: 2;
+    }
+
+    /* The Scannable Card */
     .post-card {
         display: flex;
         flex-direction: row;
@@ -11,9 +42,8 @@ layout: default
         background: #fff;
         border: 1px solid #e0e0e0;
         padding: 20px;
-        margin-bottom: 30px;
-        border-left: 8px solid #FF6319; /* MTA Orange Accent */
-        box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        border-left: 6px solid #FF6319; /* MTA Orange accent on the card itself */
+        box-shadow: 0 4px 10px rgba(0,0,0,0.05);
         position: relative;
     }
     
@@ -28,7 +58,7 @@ layout: default
     .post-thumbnail img {
         width: 100%;
         height: 100%;
-        object-fit: cover; /* This perfectly crops your photo into a square! */
+        object-fit: cover; /* Perfectly crops photo into a square */
     }
 
     /* The Text Content */
@@ -37,7 +67,7 @@ layout: default
     }
     .post-meta {
         font-weight: bold;
-        color: #0039A6; /* MTA Blue */
+        color: #555;
         text-transform: uppercase;
         font-size: 0.75rem;
         letter-spacing: 1px;
@@ -66,46 +96,37 @@ layout: default
     }
     .read-more:hover { background-color: #FF6319; }
 
-    /* Mobile responsiveness: Stack them on small screens */
+    /* Mobile responsiveness */
     @media (max-width: 600px) {
+        .timeline-feed { padding-left: 20px; }
+        .timeline-stop { padding-left: 25px; border-left-width: 4px; }
+        .timeline-stop::before { left: -11px; width: 10px; height: 10px; border-width: 4px; }
         .post-card { flex-direction: column; }
         .post-thumbnail { width: 100%; height: 200px; }
     }
 </style>
 
-<div id="map" style="width: 100%; height: 400px; border-bottom: 1px solid #ccc; background-color: #e5e5e5;"></div>
-
-<main class="journal-feed" style="padding: 40px 20px;">
+<main class="timeline-feed">
     
     {% for post in site.posts %}
-    <article class="post-card">
-        
-        {% if post.image %}
-        <div class="post-thumbnail">
-            <img src="{{ post.image }}" alt="Thumbnail for {{ post.title }}">
-        </div>
-        {% endif %}
-
-        <div class="post-content">
-            <div class="post-meta">{{ post.date | date: "%b %d" }} &nbsp;&bull;&nbsp; {{ post.location }}</div>
-            <h2>{{ post.title }}</h2>
+    <div class="timeline-stop">
+        <article class="post-card">
             
-            <p>{{ post.content | strip_html | truncatewords: 30 }}</p>
-            
-            <a href="{{ post.url }}" class="read-more">Read Entry &rarr;</a>
-        </div>
+            {% if post.image %}
+            <div class="post-thumbnail">
+                <img src="{{ post.image }}" alt="Thumbnail for {{ post.title }}">
+            </div>
+            {% endif %}
 
-    </article>
+            <div class="post-content">
+                <div class="post-meta">{{ post.date | date: "%b %d" }} &nbsp;&bull;&nbsp; {{ post.location }}</div>
+                <h2>{{ post.title }}</h2>
+                <p>{{ post.content | strip_html | truncatewords: 30 }}</p>
+                <a href="{{ post.url }}" class="read-more">Read Entry &rarr;</a>
+            </div>
+
+        </article>
+    </div>
     {% endfor %}
 
 </main>
-
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet-gpx/1.7.0/gpx.min.js"></script>
-
-<script>
-    // ... [Your existing Leaflet map javascript stays exactly the same here for now] ...
-    var map = L.map('map', { preferCanvas: true }).setView([39.8283, -98.5795], 4);
-    L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', { maxZoom: 19 }).addTo(map);
-    // [I'm omitting the rest of the GPX/Strava script block for brevity, just leave your existing script intact!]
-</script>
