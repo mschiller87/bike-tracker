@@ -208,6 +208,26 @@
                 }
             }).addTo(map); 
         });
+        // 3. Fetch the automated Strava data and draw it in bright orange!
+        fetch('strava_rides.geojson')
+            .then(response => response.json())
+            .then(data => {
+                L.geoJSON(data, {
+                    style: function (feature) {
+                        return {
+                            color: '#ff4500', // Bright orange-red
+                            weight: 4,
+                            opacity: 0.9
+                        };
+                    },
+                    onEachFeature: function (feature, layer) {
+                        // Add a popup so when you click the orange line, it tells you the ride name and distance
+                        var distMiles = (feature.properties.distance * 0.000621371).toFixed(1);
+                        layer.bindPopup("<b>" + feature.properties.name + "</b><br>" + distMiles + " miles");
+                    }
+                }).addTo(map);
+            })
+            .catch(err => console.log("No Strava data found yet."));
     </script>
 
 </body>
