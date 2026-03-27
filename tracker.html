@@ -4,13 +4,11 @@ title: Live Tracker
 ---
 
 <style>
-    /* 1. Completely disable scrolling on this specific page */
     body, html {
         overflow: hidden !important; 
         background-color: #e5e5e5;
     }
     
-    /* 2. Break out of the 800px width limit so it touches the edges of the screen */
     .container {
         max-width: 100% !important;
         margin: 0 !important;
@@ -18,14 +16,12 @@ title: Live Tracker
         box-shadow: none !important;
     }
 
-    /* 3. The Map Wrapper (Allows us to float the button over the map) */
     .map-wrapper {
         position: relative;
         width: 100%;
         height: calc(100vh - 175px) !important; 
     }
 
-    /* 4. Force the map to fill the wrapper */
     #map {
         width: 100%;
         height: 100%;
@@ -33,13 +29,13 @@ title: Live Tracker
         border: none !important;
     }
     
-    /* 5. The Floating Strava Button */
+    /* The Smart Strava Button */
     .strava-btn {
         position: absolute;
         top: 20px;
         right: 20px;
-        z-index: 1000; /* Forces it to sit above the Leaflet map tiles! */
-        background-color: #FC4C02; /* Official Strava Orange */
+        z-index: 1000; 
+        background-color: #FC4C02; 
         color: white;
         text-decoration: none;
         font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
@@ -53,7 +49,7 @@ title: Live Tracker
         align-items: center;
         gap: 8px;
         box-shadow: 0 4px 10px rgba(0,0,0,0.3);
-        transition: transform 0.2s ease, background-color 0.2s ease;
+        transition: all 0.2s ease;
     }
 
     .strava-btn:hover {
@@ -70,6 +66,21 @@ title: Live Tracker
     .leaflet-control-container {
         margin-bottom: 20px;
     }
+
+    /* --- MOBILE MAP FIXES --- */
+    @media (max-width: 600px) {
+        .map-wrapper {
+            height: calc(100vh - 120px) !important; /* Adjusts map height to match the new slimmer mobile header */
+        }
+        /* Hides the text and turns the button into a pure circle icon! */
+        .strava-text { display: none; }
+        .strava-btn { 
+            padding: 10px; 
+            border-radius: 50%; /* Makes it a circle */
+            top: 15px; 
+            right: 15px;
+        }
+    }
 </style>
 
 <div class="map-wrapper">
@@ -78,7 +89,7 @@ title: Live Tracker
         <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
             <path d="M15.387 17.944l-2.089 4.116h-3.065L15.387 12l5.15 10.06h-3.066m-7.008-5.599l2.836 5.598h4.172L10.463 0l-7 13.828h4.169"/>
         </svg>
-        Follow on Strava
+        <span class="strava-text">Follow on Strava</span>
     </a>
 
     <div id="map"></div>
