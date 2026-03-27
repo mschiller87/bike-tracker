@@ -11,20 +11,6 @@ title: Stats
         font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
     }
 
-    .stats-header {
-        text-align: center;
-        margin-bottom: 40px;
-    }
-
-    .stats-header h2 {
-        color: #121212;
-        text-transform: uppercase;
-        border-bottom: 4px solid #FCCC0A; /* MTA Yellow */
-        display: inline-block;
-        padding-bottom: 5px;
-        letter-spacing: -0.5px;
-    }
-
     /* THE STAT CARDS GRID */
     .stat-grid {
         display: grid;
@@ -39,12 +25,12 @@ title: Stats
         padding: 30px;
         text-align: center;
         box-shadow: 0 4px 15px rgba(0,0,0,0.05);
-        opacity: 0; /* Hidden by default for scroll animation */
-        transform: translateY(30px);
-        transition: all 0.6s cubic-bezier(0.25, 1, 0.5, 1);
+        opacity: 0; 
+        transform: translateY(40px);
+        /* SLOWED DOWN: The card itself takes 1 full second to gracefully float up and fade in */
+        transition: all 1s cubic-bezier(0.25, 1, 0.5, 1);
     }
 
-    /* When the JS detects the card is on screen, it adds this class */
     .stat-card.in-view {
         opacity: 1;
         transform: translateY(0);
@@ -68,7 +54,7 @@ title: Stats
         letter-spacing: -2px;
     }
 
-    /* --- SPECIFIC ANIMATIONS --- */
+    /* --- SLOWED SPECIFIC ANIMATIONS --- */
 
     /* Elevation Mountain Animation */
     .mountain-graphic {
@@ -78,7 +64,7 @@ title: Stats
     }
     .mountain-path {
         fill: none;
-        stroke: #6CBE45; /* MTA Green */
+        stroke: #6CBE45; 
         stroke-width: 4;
         stroke-linecap: round;
         stroke-linejoin: round;
@@ -86,7 +72,8 @@ title: Stats
         stroke-dashoffset: 200;
     }
     .stat-card.in-view .mountain-path {
-        animation: climbMountain 2s ease-out forwards;
+        /* Slowed from 2s to 3s */
+        animation: climbMountain 3s ease-out forwards;
         animation-delay: 0.5s;
     }
     @keyframes climbMountain {
@@ -107,132 +94,8 @@ title: Stats
         transform: translateY(-20px);
     }
     .stat-card.in-view .hotdog-emoji {
-        animation: dropIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+        /* Slowed from 0.5s to 0.8s for a lazier drop */
+        animation: dropIn 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
     }
     @keyframes dropIn {
-        to { opacity: 1; transform: translateY(0); }
-    }
-
-    /* Flat Tire Spin Animation */
-    .tire-icon {
-        font-size: 2.5rem;
-        display: inline-block;
-    }
-    .stat-card.in-view .tire-icon {
-        animation: flatTireWobble 1s ease-in-out forwards;
-        animation-delay: 0.5s;
-    }
-    @keyframes flatTireWobble {
-        0% { transform: rotate(0deg); }
-        25% { transform: rotate(15deg); }
-        50% { transform: rotate(-10deg); }
-        75% { transform: rotate(5deg) scaleY(0.8); } /* The "deflate" squish */
-        100% { transform: rotate(0deg) scaleY(0.6); opacity: 0.5; }
-    }
-</style>
-
-<div class="stats-container">
-    <div class="stats-header">
-        <h2>The Numbers</h2>
-    </div>
-
-    <div class="stat-grid">
-        
-        <div class="stat-card" style="border-top-color: #0039A6;">
-            <div class="stat-title">Total Miles Biked</div>
-            <div class="stat-number" data-target="{{ site.posts.first.total_miles | default: 0 }}">0</div>
-            <div style="font-size: 2rem;">🚲</div>
-        </div>
-
-        <div class="stat-card" style="border-top-color: #FF6319;">
-            <div class="stat-title">Days in the Saddle</div>
-            <div class="stat-number" data-target="{{ site.posts.size }}">0</div>
-            <div style="font-size: 2rem;">☀️</div>
-        </div>
-
-        <div class="stat-card" style="border-top-color: #6CBE45;">
-            <div class="stat-title">Elevation Climbed (ft)</div>
-            <div class="stat-number" data-target="0" id="elevation-stat">0</div>
-            <svg class="mountain-graphic" viewBox="0 0 100 50">
-                <path class="mountain-path" d="M5,45 L30,15 L50,35 L80,5 L95,45" />
-            </svg>
-        </div>
-
-        <div class="stat-card" style="border-top-color: #FCCC0A;">
-            <div class="stat-title">Hot Dogs Consumed</div>
-            <div class="stat-number" data-target="{{ site.data.fun_stats.hot_dogs | default: 0 }}">0</div>
-            <div class="hotdog-container" id="hotdog-box"></div>
-        </div>
-
-        <div class="stat-card" style="border-top-color: #EE352E;">
-            <div class="stat-title">Flat Tires</div>
-            <div class="stat-number" data-target="{{ site.data.fun_stats.flat_tires | default: 0 }}">0</div>
-            <div class="tire-icon">🛞</div>
-        </div>
-
-        <div class="stat-card" style="border-top-color: #0039A6;">
-            <div class="stat-title">Showers Taken</div>
-            <div class="stat-number" data-target="{{ site.data.fun_stats.showers | default: 0 }}">0</div>
-            <div style="font-size: 2rem;">🚿</div>
-        </div>
-
-    </div>
-</div>
-
-<script>
-    document.addEventListener("DOMContentLoaded", function() {
-        
-        // 1. Generate the Hot Dog Emojis based on the data!
-        const hotDogTarget = {{ site.data.fun_stats.hot_dogs | default: 0 }};
-        const hotDogBox = document.getElementById('hotdog-box');
-        // Only show up to 15 emojis so it doesn't break the layout, but keep the number accurate!
-        const displayLimit = Math.min(hotDogTarget, 15); 
-        for(let i=0; i < displayLimit; i++) {
-            let hd = document.createElement('span');
-            hd.className = 'hotdog-emoji';
-            hd.innerText = '🌭';
-            // Stagger the drop-in animation
-            hd.style.animationDelay = (i * 0.1) + 's';
-            hotDogBox.appendChild(hd);
-        }
-
-        // 2. The Intersection Observer (Triggers animations when scrolled into view)
-        const observer = new IntersectionObserver((entries) => {
-            entries.forEach(entry => {
-                if (entry.isIntersecting) {
-                    // Add the class that triggers the CSS animations
-                    entry.target.classList.add('in-view');
-                    
-                    // Trigger the Number Counter animation
-                    const numberElement = entry.target.querySelector('.stat-number');
-                    if (numberElement && !numberElement.classList.contains('counted')) {
-                        numberElement.classList.add('counted');
-                        const target = parseInt(numberElement.getAttribute('data-target'));
-                        const duration = 2000; // 2 seconds
-                        const stepTime = Math.abs(Math.floor(duration / target));
-                        let current = 0;
-                        
-                        if (target > 0) {
-                            const timer = setInterval(() => {
-                                current += Math.ceil(target / 50); // Speeds it up for big numbers
-                                if (current >= target) {
-                                    numberElement.innerText = target.toLocaleString(); // Adds commas!
-                                    clearInterval(timer);
-                                } else {
-                                    numberElement.innerText = current.toLocaleString();
-                                }
-                            }, 30);
-                        }
-                    }
-                    // Un-observe so it only happens once
-                    observer.unobserve(entry.target);
-                }
-            });
-        }, { threshold: 0.2 });
-
-        // Attach observer to all stat cards
-        document.querySelectorAll('.stat-card').forEach(card => {
-            observer.observe(card);
-        });
-    });
-</script>
+        to { opacity: 1
