@@ -1,218 +1,137 @@
 import os
 import requests
-import json
-import polyline
-import time
-import shutil 
+import yaml
+from datetime import datetime
 
-import requests
+# --- CONFIGURATION ---
+CLIENT_ID = os.environ.get('STRAVA_CLIENT_ID')
+CLIENT_SECRET = os.environ.get('STRAVA_CLIENT_SECRET')
+REFRESH_TOKEN = os.environ.get('STRAVA_REFRESH_TOKEN')
 
 def get_ride_weather(lat, lon, date_str):
-    # date_str must be formatted as "YYYY-MM-DD"
+    """Fetches historical max/min temps for a specific coordinate and date."""
     url = f"https://api.open-meteo.com/v1/forecast?latitude={lat}&longitude={lon}&start_date={date_str}&end_date={date_str}&daily=temperature_2m_max,temperature_2m_min&temperature_unit=fahrenheit&timezone=auto"
-    
     try:
         response = requests.get(url)
+        response.raise_for_status()
         data = response.json()
         max_temp = round(data['daily']['temperature_2m_max'][0])
         min_temp = round(data['daily']['temperature_2m_min'][0])
         return max_temp, min_temp
     except Exception as e:
-        print(f"Weather fetch failed for {date_str}: {e}")
+        print(f"⚠️ Weather fetch failed for {date_str}: {e}")
         return None, None
 
-# --- 1. SETTINGS & AUTHENTICATION ---
-CLIENT_ID = os.environ['STRAVA_CLIENT_ID']
-CLIENT_SECRET = os.environ['STRAVA_CLIENT_SECRET']
-REFRESH_TOKEN = os.environ['STRAVA_REFRESH_TOKEN']
+def main():
+    print("🚴‍♂️ Starting Transcontinental Sync...")
 
-TRIP_START_DATE = "2026-03-01" 
-BASE_URL = "https://mschiller87.github.io/bike-tracker"
+    # 1. AUTHENTICATE WITH STRAVA
+    auth_url = "https://www.strava.com/oauth/token"
+    payload = {
+        'client_id': CLIENT_ID,
+        'client_secret': CLIENT_SECRET,
+        'refresh_token': REFRESH_TOKEN,
+        'grant_type': 'refresh_token',
+        'f': 'json'
+    }
+    print("🔑 Getting fresh access token...")
+    res = requests.post(auth_url, data=payload, verify=False)
+    access_token = res.json().get('access_token')
 
-print("Authenticating with Strava...")
-auth_url = "https://www.strava.com/oauth/token"
-payload = {
-    'client_id': CLIENT_ID,
-    'client_secret': CLIENT_SECRET,
-    'refresh_token': REFRESH_TOKEN,
-    'grant_type': 'refresh_token',
-    'f': 'json'
-}
-res = requests.post(auth_url, data=payload)
-access_token = res.json()['access_token']
-headers = {'Authorization': f'Bearer {access_token}'}
+    if not access_token:
+        print("❌ Failed to get access token!")
+        return
 
-# --- 2. FETCH AND FILTER ACTIVITIES ---
-print("Fetching activities...")
-activities_url = "https://www.strava.com/api/v3/athlete/activities?per_page=100"
-activities = requests.get(activities_url, headers=headers).json()
+    # 2. FETCH ACTIVITIES
+    activities_url = "https://www.strava.com/api/v3/athlete/activities?per_page=100"
+    header = {'Authorization': f'Bearer {access_token}'}
+    print("📥 Downloading activities...")
+    activities = requests.get(activities_url, headers=header).json()
 
-trip_rides = [
-    a for a in activities 
-    if a['start_date_local'][:10] >= TRIP_START_DATE 
-    and 'Ride' in a['type'] 
-]
-trip_rides.sort(key=lambda x: x['start_date_local'])
-
-# --- 3. THE CLEAN SLATE PROTOCOL ---
-if os.path.exists('_posts'):
-    shutil.rmtree('_posts')
-os.makedirs('_posts', exist_ok=True)
-os.makedirs('images', exist_ok=True)
-os.makedirs('_data', exist_ok=True) # Make sure the data folder exists!
-
-# NEW: Automated Stat Trackers!
-total_miles = 0
-total_elevation_ft = 0
-total_moving_seconds = 0
-total_calories = 0
-longest_day_miles = 0
-geojson_features = []
-
-# --- 4. THE STRAVA-TO-BLOG PIPELINE ---
-for ride in trip_rides:
-    act_id = str(ride['id'])
-    date_str = ride['start_date_local'][:10]
-    title = ride['name'].replace('"', "'") 
+    os.makedirs('_posts', exist_ok=True)
     
-    print(f"Processing ride: {title}")
-    
-    # Do the Math!
-    ride_miles = ride['distance'] * 0.000621371
-    total_miles += ride_miles
-    
-    if ride_miles > longest_day_miles:
-        longest_day_miles = ride_miles
-    
-    location_str = "On the Road" 
-    
-    if ride['map']['summary_polyline']:
-        coordinates = polyline.decode(ride['map']['summary_polyline'])
-        geojson_coords = [[lon, lat] for lat, lon in coordinates] 
-        end_lat, end_lon = coordinates[-1]
+    # Weather Tracking Variables
+    overall_hottest = -999
+    overall_coldest = 999
+    total_miles_ridden = 0
+
+    # 3. PROCESS EACH RIDE
+    for act in activities:
+        # Only process actual rides
+        if act['type'] != 'Ride':
+            continue
+
+        date_str = act['start_date_local'][:10]
+        title = act['name'].replace('"', "'")
+        miles = round(act['distance'] * 0.000621371, 1) # Meters to Miles
+        total_miles_ridden += miles
         
-        nom_url = f"https://nominatim.openstreetmap.org/reverse?lat={end_lat}&lon={end_lon}&format=jsonv2"
-        try:
-            time.sleep(1) 
-            geo_data = requests.get(nom_url, headers={'User-Agent': 'TranscontinentalBikeTracker/1.0'}).json()
-            address = geo_data.get('address', {})
-            city = address.get('city') or address.get('town') or address.get('village') or address.get('hamlet') or address.get('county')
-            state = address.get('state')
-            if city and state:
-                location_str = f"{city}, {state}"
-            elif city:
-                location_str = city
-        except Exception as e:
-            print(f"Could not get location for {title}: {e}")
+        # Determine Location & Weather
+        max_t, min_t = None, None
+        location_name = "On the Road"
+        
+        if act.get('start_latlng'):
+            lat, lon = act['start_latlng']
+            location_name = f"{round(lat, 2)}, {round(lon, 2)}"
             
-        geojson_features.append({
-            "type": "Feature",
-            "properties": {"name": title, "distance": ride['distance']},
-            "geometry": {"type": "LineString", "coordinates": geojson_coords}
-        })
-
-    # Get deep activity details to pull calories, elevation, moving time, and photos
-    detail_url = f"https://www.strava.com/api/v3/activities/{act_id}"
-    details = requests.get(detail_url, headers=headers).json()
-    
-    # Add to our massive trip totals!
-    total_elevation_ft += (details.get('total_elevation_gain', 0) * 3.28084)
-    total_moving_seconds += details.get('moving_time', 0)
-    total_calories += details.get('calories', 0)
-    
-    description = details.get('description') or "No journal entry today... just pedaling!"
-        
-    photos_url = f"https://www.strava.com/api/v3/activities/{act_id}/photos?size=5000"
-    photos_data = requests.get(photos_url, headers=headers).json()
-    
-    primary_image_url = ""
-    gallery_images_markdown = ""
-    
-    for idx, photo in enumerate(photos_data):
-        img_url = list(photo['urls'].values())[-1] 
-        img_filename = f"{act_id}_{idx}.jpg"
-        
-        img_data = requests.get(img_url).content
-        with open(f"images/{img_filename}", 'wb') as handler:
-            handler.write(img_data)
+            # Fetch Weather!
+            max_t, min_t = get_ride_weather(lat, lon, date_str)
             
-        repo_image_link = f"{BASE_URL}/images/{img_filename}"
+            # Update all-time records safely
+            if max_t is not None and max_t > overall_hottest:
+                overall_hottest = max_t
+            if min_t is not None and min_t < overall_coldest:
+                overall_coldest = min_t
+
+        # Create Markdown Front Matter
+        filename = f"_posts/{date_str}-{act['id']}.md"
+        description = act.get('description', '') or ''
         
-        if photo.get('default_photo') or idx == 0:
-            primary_image_url = repo_image_link
-        else:
-            gallery_images_markdown += f"\n![Gallery Image]({repo_image_link})\n"
+        front_matter = f"""---
+layout: post
+title: "{title}"
+date: {date_str}
+location: "{location_name}"
+total_miles: {total_miles_ridden}
+---
 
-    # --- 5. WRITE THE MARKDOWN DIARY ENTRY ---
-    filename = f"_posts/{date_str}-{act_id}.md"
-    with open(filename, 'w', encoding='utf-8') as f:
-        f.write("---\n")
-        f.write("layout: default\n")
-        f.write(f'title: "{title}"\n')
-        f.write(f'location: "{location_str}"\n') 
-        if primary_image_url:
-            f.write(f'image: "{primary_image_url}"\n')
-        f.write(f"total_miles: {int(total_miles)}\n")
-        f.write("---\n\n")
-        f.write(f"{description}\n")
-        
-        if gallery_images_markdown:
-            f.write("\n### Today's Gallery\n")
-            f.write(gallery_images_markdown)
+{description}
+"""
+        with open(filename, 'w', encoding='utf-8') as f:
+            f.write(front_matter)
 
-# --- 6. SAVE AUTOMATED MAP & STAT DATA ---
-with open('strava_rides.geojson', 'w') as f:
-    json.dump({"type": "FeatureCollection", "features": geojson_features}, f)
+    # Clean up baseline weather values if no data was found
+    if overall_hottest == -999: overall_hottest = 0
+    if overall_coldest == 999: overall_coldest = 0
 
-# Writes the math calculations into a file your website can read!
-with open('_data/automated_stats.yml', 'w') as f:
-    f.write(f"total_elevation_ft: {int(total_elevation_ft)}\n")
-    f.write(f"total_moving_hours: {int(total_moving_seconds / 3600)}\n")
-    f.write(f"longest_day_miles: {int(longest_day_miles)}\n")
-    f.write(f"total_calories: {int(total_calories)}\n")
-
-print("SUCCESS: Blog synced, stats calculated, and data saved!")
-
-# ==========================================
-# EMOJI FUN STATS AUTOMATION
-# ==========================================
-def update_fun_stats():
-    import os
-    import yaml
-    
-    posts_dir = '_posts'
+    # 4. PARSE EMOJIS FOR FUN STATS
+    print("🌭 Scanning posts for emojis...")
     total_hot_dogs = 0
     total_tents = 0
     total_beds = 0
-    
-    # Using ONLY the base unicode character prevents the "Double Count" bug!
-    hotdog_base = '🌭'
-    tent_base = '⛺'
-    bed_base = '🛏'
-    
-    if os.path.exists(posts_dir):
-        for filename in os.listdir(posts_dir):
-            if filename.endswith(".md"):
-                with open(os.path.join(posts_dir, filename), 'r', encoding='utf-8') as f:
-                    content = f.read()
-                    
-                    # Count base emojis
-                    total_hot_dogs += content.count(hotdog_base)
-                    total_tents += content.count(tent_base)
-                    total_beds += content.count(bed_base)
-                        
+
+    for filename in os.listdir('_posts'):
+        if filename.endswith(".md"):
+            with open(os.path.join('_posts', filename), 'r', encoding='utf-8') as f:
+                content = f.read()
+                total_hot_dogs += content.count('🌭')
+                total_tents += content.count('⛺')
+                total_beds += content.count('🛏')
+
+    # 5. SAVE EVERYTHING TO ONE DATA FILE
     fun_stats = {
         'hot_dogs': total_hot_dogs,
         'nights_tent': total_tents,
-        'nights_bed': total_beds
+        'nights_bed': total_beds,
+        'hottest_day': overall_hottest,
+        'coldest_night': overall_coldest
     }
     
-    # Save to the data folder
     os.makedirs('_data', exist_ok=True)
     with open('_data/fun_stats.yml', 'w', encoding='utf-8') as f:
         yaml.dump(fun_stats, f, default_flow_style=False, sort_keys=False)
     
-    print(f"✅ Fun Stats Updated: {total_hot_dogs} Hot Dogs, {total_tents} Tents, {total_beds} Beds")
+    print(f"✅ Sync Complete! Data saved: {fun_stats}")
 
-# Run the function
-update_fun_stats()
+if __name__ == '__main__':
+    main()
