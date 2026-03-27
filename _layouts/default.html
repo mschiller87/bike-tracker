@@ -8,16 +8,10 @@
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     
     <style>
-        /* ADDED OVERFLOW-X FIX HERE */
-        html, body {
-            overflow-x: hidden;
-            width: 100%;
-        }
+        html, body { overflow-x: hidden; width: 100%; }
 
-        /* NYC Subway Tile Background */
         body { 
-            margin: 0; 
-            padding: 0; 
+            margin: 0; padding: 0; 
             font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; 
             background-color: #f8f9fa;
             background-image:
@@ -27,111 +21,49 @@
             color: #121212;
         }
 
-        header {
-            position: sticky; 
-            top: 0; 
-            z-index: 1000; 
-            background-color: #121212;
-            color: white;
-            text-align: center;
-        }
-        
-        .header-text {
-            padding: 25px 20px 20px 20px;
-            transition: padding 0.3s ease; 
-        }
+        header { position: sticky; top: 0; z-index: 1000; background-color: #121212; color: white; text-align: center; }
+        .header-text { padding: 25px 20px 20px 20px; transition: padding 0.3s ease; }
+        header h1 { font-size: clamp(1.5rem, 5vw, 3rem); font-weight: bold; text-transform: uppercase; letter-spacing: -1.5px; margin: 0; white-space: nowrap; }
+        header p { font-size: clamp(0.65rem, 2vw, 0.9rem); text-transform: uppercase; letter-spacing: 2px; color: #aaa; margin-top: 10px; margin-bottom: 0; white-space: nowrap; }
 
-        header h1 { 
-            font-size: clamp(1.5rem, 5vw, 3rem); 
-            font-weight: bold; 
-            text-transform: uppercase; 
-            letter-spacing: -1.5px; 
-            margin: 0; 
-            white-space: nowrap; 
-        }
-        header p {
-            font-size: clamp(0.65rem, 2vw, 0.9rem);
-            text-transform: uppercase;
-            letter-spacing: 2px;
-            color: #aaa;
-            margin-top: 10px;
-            margin-bottom: 0;
-            white-space: nowrap;
-        }
-
-        .mta-tabs {
-            display: flex;
-            width: 100%;
-            height: 40px; 
-            transition: height 0.3s ease;
-        }
+        .mta-tabs { display: flex; width: 100%; height: 40px; }
         
         .mta-tab {
             flex: 1; 
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            text-decoration: none;
-            color: white;
-            font-weight: bold;
-            font-size: 0.8rem;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            overflow: hidden; 
-            cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+            text-decoration: none; color: white; font-weight: bold; font-size: 0.8rem;
+            text-transform: uppercase; letter-spacing: 1px; overflow: hidden; 
             transition: flex 0.4s cubic-bezier(0.25, 1, 0.5, 1);
         }
 
-        .tab-icon {
-            width: 20px;
-            height: 20px;
-            flex-shrink: 0;
-            object-fit: contain;
-            transition: width 0.3s, height 0.3s;
-        }
-
-        .tab-blue .tab-icon, .tab-orange .tab-icon, .tab-green .tab-icon, .tab-red .tab-icon { filter: invert(1); }
+        .tab-icon { width: 20px; height: 20px; flex-shrink: 0; filter: invert(1); }
         .tab-yellow { color: #121212; }
+        .tab-yellow .tab-icon { filter: none; }
 
-        .mta-tab span {
-            opacity: 0;
-            max-width: 0;
-            white-space: nowrap;
-            transition: all 0.4s ease;
-            display: inline-block;
-        }
+        .mta-tab span { opacity: 0; max-width: 0; white-space: nowrap; transition: all 0.4s ease; display: inline-block; }
 
-        .mta-tab:hover, .mta-tab.active { flex: 4; }
-        .mta-tab:hover span, .mta-tab.active span {
-            opacity: 1;
-            max-width: 150px; 
-            margin-left: 8px; 
-        }
+        /* With 4 tabs, we make the active one expand slightly more (flex: 3) */
+        .mta-tab:hover, .mta-tab.active { flex: 3; }
+        .mta-tab:hover span, .mta-tab.active span { opacity: 1; max-width: 150px; margin-left: 8px; }
 
         .tab-blue   { background-color: #0039A6; }
         .tab-orange { background-color: #FF6319; }
         .tab-green  { background-color: #6CBE45; }
-        .tab-red    { background-color: #EE352E; }
         .tab-yellow { background-color: #FCCC0A; } 
 
         .container {
-            max-width: 800px;
-            margin: 0 auto;
-            background-color: white; 
-            padding: 0;
+            max-width: 800px; margin: 0 auto;
+            background-color: white; padding: 0;
             box-shadow: 0 0 20px rgba(0,0,0,0.05);
             min-height: 100vh;
-            /* ADDED OVERFLOW-X FIX HERE */
             overflow-x: hidden;
         }
 
         @media (max-width: 600px) {
             .header-text { padding: 12px 10px 10px 10px; }
-            header p { margin-top: 5px; letter-spacing: 1px; }
             .mta-tabs { height: 32px; } 
             .tab-icon { width: 16px; height: 16px; } 
             .mta-tab { font-size: 0.7rem; } 
-            .mta-tab:hover span, .mta-tab.active span { max-width: 100px; margin-left: 5px; }
         }
     </style>
 </head>
@@ -155,10 +87,6 @@
             <a href="{{ site.baseurl }}/photos.html" class="mta-tab tab-green {% if page.url contains 'photos' %}active{% endif %}">
                 <img src="{{ site.baseurl }}/images/photos.png" class="tab-icon" alt="Photos">
                 <span>Photos</span>
-            </a>
-            <a href="{{ site.baseurl }}/game.html" class="mta-tab tab-red {% if page.url contains 'game' %}active{% endif %}">
-                <img src="{{ site.baseurl }}/images/message-board.png" class="tab-icon" alt="Game">
-                <span>Sprint Game</span>
             </a>
             <a href="{{ site.baseurl }}/stats.html" class="mta-tab tab-yellow {% if page.url contains 'stats' %}active{% endif %}">
                 <img src="{{ site.baseurl }}/images/stats.png" class="tab-icon" alt="Stats">
