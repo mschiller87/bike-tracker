@@ -23,14 +23,13 @@
 
         /* Bold MTA-Style Sticky Header */
         header {
-            position: sticky; /* This makes the header stick! */
-            top: 0; /* Tells it to stick to the very top of the screen */
-            z-index: 1000; /* Ensures it stays visually on top of your maps and text */
+            position: sticky; 
+            top: 0; 
+            z-index: 1000; 
             background-color: #121212;
             color: white;
-            padding: 25px 20px; /* Slimmed down slightly so it doesn't take up the whole screen when scrolling */
+            padding: 25px 20px; 
             text-align: center;
-            /* The 5-Color Subway Route Accent Line */
             border-bottom: 6px solid;
             border-image: linear-gradient(to right, #0039A6 20%, #FF6319 20% 40%, #6CBE45 40% 60%, #EE352E 60% 80%, #FCCC0A 80% 100%) 1;
         }
@@ -49,7 +48,7 @@
             margin-top: 10px;
         }
 
-        /* Navigation Menu */
+        /* Dynamic Navigation Menu */
         nav {
             margin-top: 25px;
         }
@@ -61,9 +60,15 @@
             text-transform: uppercase; 
             margin: 0 15px; 
             padding-bottom: 5px; 
+            border-bottom: 3px solid transparent; /* Default to invisible border */
+            transition: border-color 0.2s ease;
         }
         nav a:hover {
             color: #FF6319;
+        }
+        /* The active class makes the orange line appear! */
+        nav a.active {
+            border-bottom: 3px solid #FF6319;
         }
         
         /* The Content Wrapper */
@@ -84,8 +89,8 @@
         <p>Pacific to Atlantic &nbsp;&bull;&nbsp; Summer 2026</p>
         
         <nav>
-            <a href="{{ site.baseurl }}/" style="border-bottom: 3px solid #FF6319;">Journal</a>
-            <a href="{{ site.baseurl }}/tracker.html" style="border-bottom: 3px solid transparent;">Live Map</a>
+            <a href="{{ site.baseurl }}/" class="{% if page.url == '/' or page.url == '/index.html' %}active{% endif %}">Journal</a>
+            <a href="{{ site.baseurl }}/tracker.html" class="{% if page.url == '/tracker.html' %}active{% endif %}">Live Map</a>
         </nav>
     </header>
 
