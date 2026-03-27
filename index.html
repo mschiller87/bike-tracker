@@ -1,118 +1,47 @@
-<script>
-    document.addEventListener("DOMContentLoaded", function() {
-        
-        // 1. Find all expand buttons and attach a safe event listener
-        const expandButtons = document.querySelectorAll('.expand-toggle');
-        
-        expandButtons.forEach(btn => {
-            // Remove any inline onclick attributes just in case
-            btn.removeAttribute('onclick');
-            
-            btn.addEventListener('click', function() {
-                const card = this.closest('.post-card');
-                const preview = card.querySelector('.post-preview');
-                const full = card.querySelector('.post-full');
-                const thumbnail = card.querySelector('.post-thumbnail');
-                
-                // ACTION: Expand the card
-                if (!card.classList.contains('expanded')) {
-                    full.style.display = 'block';
-                    preview.style.display = 'none';
-                    if (thumbnail) thumbnail.style.display = 'none'; 
-                    this.innerHTML = 'Close Entry';
-                    card.classList.add('expanded'); 
+---
+layout: default
+---
 
-                    // Automagically create the gallery safely
-                    if (!card.dataset.galleryProcessed) {
-                        const galleryContainer = document.createElement('div');
-                        galleryContainer.className = 'post-image-grid';
-                        
-                        // Safely check for a primary thumbnail image
-                        if (thumbnail) {
-                            const primaryImg = thumbnail.querySelector('img');
-                            if (primaryImg) {
-                                galleryContainer.innerHTML += `<img src="${primaryImg.src}" class="lightbox-trigger">`;
-                            }
-                        }
-                        
-                        // Safely grab embedded markdown images
-                        const extraImages = full.querySelectorAll('img:not(.lightbox-trigger)');
-                        extraImages.forEach(img => {
-                            const newImg = document.createElement('img');
-                            newImg.src = img.src;
-                            newImg.className = 'lightbox-trigger';
-                            galleryContainer.appendChild(newImg);
-                            img.remove(); // Removes raw image from text
-                        });
-                        
-                        // Safely remove the "Today's Gallery" text if it exists
-                        const headers = full.querySelectorAll('h3');
-                        headers.forEach(h => { if(h.innerText.includes('Gallery')) h.remove(); });
-                        
-                        full.appendChild(galleryContainer);
-                        card.dataset.galleryProcessed = "true";
-                        
-                        // Re-bind Lightbox events for the new images
-                        setupLightboxEvents();
-                    }
-                } 
-                // ACTION: Collapse the card
-                else {
-                    full.style.display = 'none';
-                    preview.style.display = 'block';
-                    if (thumbnail) thumbnail.style.display = 'block';
-                    this.innerHTML = 'Full Entry';
-                    card.classList.remove('expanded');
-                }
-            });
-        });
+<style>
+    /* 1. Sleek Abstract Strip Map CSS */
+    .strip-map-container {
+        max-width: 800px; margin: 0 auto; padding: 180px 20px 80px 20px; 
+        font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    }
+    .track-line { display: flex; justify-content: space-between; align-items: flex-end; border-bottom: 6px solid #121212; padding-bottom: 0; position: relative; }
+    .station-node { position: relative; display: flex; flex-direction: column; align-items: center; width: 25%; }
+    .station-dot { position: absolute; bottom: -11px; width: 16px; height: 16px; background-color: #fff; border: 5px solid #121212; border-radius: 50%; z-index: 2; }
+    .station-node.current .station-dot { border-color: #FF6319; box-shadow: 0 0 0 4px rgba(255, 99, 25, 0.15); }
+    .station-node.final .station-dot { border-color: #EE352E; }
+    .angled-label { position: absolute; bottom: 25px; left: 50%; transform-origin: bottom left; transform: rotate(-45deg); font-size: 1.1rem; font-weight: bold; color: #121212; white-space: normal; width: 150px; line-height: 1.2; letter-spacing: -0.5px; }
+    .sub-label { display: block; font-size: 0.8rem; color: #888; font-weight: normal; margin-top: 2px; text-transform: uppercase; letter-spacing: 1px; }
+    .mileage-stats { position: absolute; top: 25px; font-size: 0.85rem; font-weight: bold; color: #555; text-align: center; width: 100%; text-transform: uppercase; }
 
-        // 2. Lightbox Functionality
-        let currentGallery = [];
-        let currentIndex = 0;
-
-        function setupLightboxEvents() {
-            const triggers = document.querySelectorAll('.lightbox-trigger');
-            triggers.forEach((trigger, index) => {
-                // Ensure we don't attach multiple click events to the same image
-                trigger.onclick = null; 
-                trigger.onclick = function() {
-                    // Find ONLY the images inside the specific card that was clicked
-                    const parentCard = this.closest('.post-card');
-                    const cardImages = parentCard.querySelectorAll('.lightbox-trigger');
-                    
-                    currentGallery = Array.from(cardImages).map(img => img.src);
-                    
-                    // Find which index we just clicked
-                    currentIndex = currentGallery.indexOf(this.src);
-                    openLightbox();
-                };
-            });
-        }
-
-        function openLightbox() {
-            document.getElementById('lightbox').classList.add('active');
-            document.body.style.overflow = 'hidden'; 
-            updateLightboxImage();
-        }
-
-        window.closeLightbox = function() {
-            document.getElementById('lightbox').classList.remove('active');
-            document.body.style.overflow = 'auto';
-        }
-
-        window.changeLightbox = function(dir) {
-            currentIndex += dir;
-            if (currentIndex >= currentGallery.length) currentIndex = 0;
-            if (currentIndex < 0) currentIndex = currentGallery.length - 1;
-            updateLightboxImage();
-        }
-
-        function updateLightboxImage() {
-            const imgEl = document.getElementById('lightbox-img');
-            if (imgEl && currentGallery.length > 0) {
-                imgEl.src = currentGallery[currentIndex];
-            }
-        }
-    });
-</script>
+    /* 2. The Refined Journal Feed (Border-free, Square Thumbnails) */
+    .journal-feed { 
+        max-width: 800px; margin: 0 auto; padding: 0 40px 60px 40px; 
+    }
+    
+    .post-card { 
+        display: flex; 
+        flex-direction: row; 
+        background: #fff; 
+        margin-bottom: 40px;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.06); 
+        overflow: hidden; 
+        transition: all 0.3s ease;
+    }
+    
+    /* Hard-coded Square Thumbnail locked on the left */
+    .post-thumbnail { 
+        width: 250px; 
+        height: 250px; 
+        flex-shrink: 0; 
+        background-color: #f4f4f4; 
+    }
+    .post-thumbnail img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    
+    /* Uses Flexbox to pin button to bottom right */
+    .post-content { 
+        flex: 1; 
+        min-width: 0;
