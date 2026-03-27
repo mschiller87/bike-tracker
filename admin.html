@@ -1,0 +1,237 @@
+---
+layout: default
+title: Update Stats
+---
+
+<style>
+    .admin-container {
+        max-width: 500px;
+        margin: 40px auto;
+        padding: 20px;
+        font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+        background: #fff;
+        border: 1px solid #e0e0e0;
+        border-top: 6px solid #121212;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+    }
+
+    .admin-header { text-align: center; margin-bottom: 30px; }
+    .admin-header h2 { text-transform: uppercase; margin: 0; color: #121212; }
+    .admin-header p { color: #888; font-size: 0.85rem; }
+
+    /* The Token Input Box */
+    .token-box {
+        background: #f8f9fa;
+        padding: 15px;
+        border: 1px solid #ccc;
+        margin-bottom: 25px;
+        border-radius: 4px;
+    }
+    .token-box input {
+        width: 100%; padding: 10px; box-sizing: border-box;
+        border: 1px solid #ccc; margin-top: 5px;
+    }
+
+    /* The Stat Controls */
+    .stat-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 15px 0;
+        border-bottom: 1px solid #eee;
+    }
+    .stat-name { font-weight: bold; text-transform: uppercase; font-size: 0.9rem; }
+    
+    .counter-controls {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+    }
+    .counter-btn {
+        background: #121212; color: white; border: none;
+        width: 35px; height: 35px; font-size: 1.2rem; font-weight: bold;
+        border-radius: 50%; cursor: pointer;
+    }
+    .counter-btn:hover { background: #FF6319; }
+    .counter-val { font-size: 1.5rem; font-weight: bold; width: 40px; text-align: center; }
+
+    /* The Save Button */
+    .save-btn {
+        width: 100%; background: #6CBE45; color: white;
+        border: none; padding: 15px; font-size: 1.1rem;
+        font-weight: bold; text-transform: uppercase;
+        margin-top: 30px; cursor: pointer; transition: background 0.2s;
+    }
+    .save-btn:hover { background: #559e34; }
+    .save-btn:disabled { background: #ccc; cursor: not-allowed; }
+
+    #status-msg { text-align: center; margin-top: 15px; font-weight: bold; }
+</style>
+
+<div class="admin-container">
+    <div class="admin-header">
+        <h2>Stat Dashboard</h2>
+        <p>Update your manual counts on the fly.</p>
+    </div>
+
+    <div class="token-box">
+        <label style="font-size: 0.8rem; font-weight: bold; text-transform: uppercase;">GitHub Access Token</label>
+        <input type="password" id="gh-token" placeholder="Paste your PAT here...">
+        <p style="font-size: 0.7rem; color: #888; margin-bottom: 0;">This stays saved on your phone.</p>
+    </div>
+
+    <div id="controls-container" style="opacity: 0.5; pointer-events: none;">
+        </div>
+
+    <button class="save-btn" id="save-btn" disabled onclick="saveStats()">Sync to Website</button>
+    <div id="status-msg"></div>
+</div>
+
+<script>
+    // Configuration
+    const REPO = 'mschiller87/bike-tracker'; 
+    const FILE_PATH = '_data/fun_stats.yml';
+    
+    let fileSha = '';
+    let currentStats = {};
+
+    const tokenInput = document.getElementById('gh-token');
+    const controlsContainer = document.getElementById('controls-container');
+    const saveBtn = document.getElementById('save-btn');
+    const statusMsg = document.getElementById('status-msg');
+
+    // Load saved token from your phone's memory
+    const savedToken = localStorage.getItem('gh_token');
+    if (savedToken) {
+        tokenInput.value = savedToken;
+        loadStats();
+    }
+
+    tokenInput.addEventListener('change', () => {
+        localStorage.setItem('gh_token', tokenInput.value);
+        loadStats();
+    });
+
+    // 1. Download the current stats from GitHub
+    async function loadStats() {
+        const token = tokenInput.value;
+        if (!token) return;
+
+        statusMsg.innerText = "Loading stats...";
+        statusMsg.style.color = "#0039A6";
+
+        try {
+            const response = await fetch(`https://api.github.com/repos/${REPO}/contents/${FILE_PATH}`, {
+                headers: { 'Authorization': `token ${token}` }
+            });
+            
+            if (!response.ok) throw new Error("Invalid Token or Repo");
+            
+            const data = await response.json();
+            fileSha = data.sha; // We need this specific code to overwrite the file later
+            
+            // Decode the Base64 YAML file
+            const yamlText = decodeURIComponent(escape(atob(data.content)));
+            
+            // Parse simple YAML into a JavaScript Object
+            currentStats = {};
+            yamlText.split('\n').forEach(line => {
+                const parts = line.split(':');
+                if (parts.length === 2) {
+                    currentStats[parts[0].trim()] = parseInt(parts[1].trim());
+                }
+            });
+
+            renderControls();
+            
+            controlsContainer.style.opacity = "1";
+            controlsContainer.style.pointerEvents = "auto";
+            saveBtn.disabled = false;
+            statusMsg.innerText = "Ready to update!";
+            statusMsg.style.color = "#6CBE45";
+
+        } catch (error) {
+            statusMsg.innerText = "Error loading stats. Check your token.";
+            statusMsg.style.color = "#EE352E";
+            console.error(error);
+        }
+    }
+
+    // 2. Draw the + / - Buttons
+    function renderControls() {
+        controlsContainer.innerHTML = '';
+        for (const [key, value] of Object.entries(currentStats)) {
+            // Clean up the formatting (e.g., "hot_dogs" -> "Hot Dogs")
+            const formattedName = key.replace('_', ' ');
+
+            const row = document.createElement('div');
+            row.className = 'stat-row';
+            row.innerHTML = `
+                <div class="stat-name">${formattedName}</div>
+                <div class="counter-controls">
+                    <button class="counter-btn" onclick="updateValue('${key}', -1)">-</button>
+                    <div class="counter-val" id="val-${key}">${value}</div>
+                    <button class="counter-btn" onclick="updateValue('${key}', 1)">+</button>
+                </div>
+            `;
+            controlsContainer.appendChild(row);
+        }
+    }
+
+    // 3. Update the numbers locally on the screen
+    window.updateValue = function(key, change) {
+        let newVal = currentStats[key] + change;
+        if (newVal < 0) newVal = 0; // Don't let stats go below zero!
+        currentStats[key] = newVal;
+        document.getElementById(`val-${key}`).innerText = newVal;
+    };
+
+    // 4. Send the updated stats back to GitHub!
+    async function saveStats() {
+        const token = tokenInput.value;
+        saveBtn.innerText = "Syncing...";
+        saveBtn.disabled = true;
+
+        // Rebuild the YAML file text
+        let newYaml = '';
+        for (const [key, value] of Object.entries(currentStats)) {
+            newYaml += `${key}: ${value}\n`;
+        }
+
+        // Encode back to Base64
+        const encodedContent = btoa(unescape(encodeURIComponent(newYaml)));
+
+        try {
+            const response = await fetch(`https://api.github.com/repos/${REPO}/contents/${FILE_PATH}`, {
+                method: 'PUT',
+                headers: { 
+                    'Authorization': `token ${token}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    message: "Update manual stats via mobile dashboard",
+                    content: encodedContent,
+                    sha: fileSha
+                })
+            });
+
+            if (!response.ok) throw new Error("Failed to save.");
+
+            saveBtn.innerText = "Success! Site rebuilding...";
+            saveBtn.style.background = "#0039A6"; // Turn blue on success
+            
+            // Reload the stats to get the new fileSha
+            setTimeout(() => {
+                saveBtn.innerText = "Sync to Website";
+                saveBtn.style.background = "#6CBE45";
+                loadStats();
+            }, 3000);
+
+        } catch (error) {
+            statusMsg.innerText = "Failed to save.";
+            statusMsg.style.color = "#EE352E";
+            saveBtn.innerText = "Sync to Website";
+            saveBtn.disabled = false;
+        }
+    }
+</script>
