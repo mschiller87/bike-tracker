@@ -3,6 +3,34 @@ layout: default
 title: Stats
 ---
 
+{% assign safe_total_miles = 0 %}
+{% if site.posts.size > 0 %}
+    {% assign safe_total_miles = site.posts.first.total_miles | default: 0 %}
+{% endif %}
+
+{% assign safe_moving_hours = 0 %}
+{% assign safe_elevation_ft = 0 %}
+{% assign safe_longest_day = 0 %}
+{% assign safe_donuts = 0 %}
+
+{% if site.data.automated_stats %}
+    {% assign safe_moving_hours = site.data.automated_stats.total_moving_hours | default: 0 %}
+    {% assign safe_elevation_ft = site.data.automated_stats.total_elevation_ft | default: 0 %}
+    {% assign safe_longest_day = site.data.automated_stats.longest_day_miles | default: 0 %}
+    {% assign raw_cals = site.data.automated_stats.total_calories | default: 0 %}
+    {% assign safe_donuts = raw_cals | divided_by: 250 %}
+{% endif %}
+
+{% assign safe_tent = 0 %}
+{% assign safe_bed = 0 %}
+{% assign safe_hot_dogs = 0 %}
+
+{% if site.data.fun_stats %}
+    {% assign safe_tent = site.data.fun_stats.nights_tent | default: 0 %}
+    {% assign safe_bed = site.data.fun_stats.nights_bed | default: 0 %}
+    {% assign safe_hot_dogs = site.data.fun_stats.hot_dogs | default: 0 %}
+{% endif %}
+
 <style>
     .stats-container {
         max-width: 800px;
@@ -24,13 +52,12 @@ title: Stats
         padding: 30px;
         text-align: center;
         box-shadow: 0 4px 15px rgba(0,0,0,0.05);
-        opacity: 0; 
-        transform: translateY(40px);
-        transition: all 1s cubic-bezier(0.25, 1, 0.5, 1);
+        /* SAFTEY FIX: We removed opacity: 0 so the cards are ALWAYS visible! */
+        transform: translateY(20px);
+        transition: transform 0.8s cubic-bezier(0.25, 1, 0.5, 1);
     }
 
     .stat-card.in-view {
-        opacity: 1;
         transform: translateY(0);
     }
 
@@ -66,7 +93,7 @@ title: Stats
     @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
     .pop-up-emoji { font-size: 2.5rem; display: inline-block; opacity: 0; transform: scale(0); }
-    .stat-card.in-view .pop-up-emoji { animation: popUp 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; animation-delay: 1s; }
+    .stat-card.in-view .pop-up-emoji { animation: popUp 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; animation-delay: 0.5s; }
     @keyframes popUp { to { opacity: 1; transform: scale(1); } }
 
     .fire-emoji { font-size: 2.5rem; display: inline-block; transform-origin: bottom; }
@@ -89,65 +116,18 @@ title: Stats
         
         <div class="stat-card" style="border-top-color: #0039A6;">
             <div class="stat-title">Total Miles Biked</div>
-            <div class="stat-number" data-target="{{ site.posts.first.total_miles | default: 0 }}">0</div>
+            <div class="stat-number" data-target="{{ safe_total_miles }}">0</div>
             <div style="font-size: 2.5rem;">🚲</div>
         </div>
 
         <div class="stat-card" style="border-top-color: #EE352E;">
             <div class="stat-title">Time Spent Pedaling</div>
-            <div class="stat-number" data-target="{{ site.data.automated_stats.total_moving_hours | default: 0 }}">0</div>
+            <div class="stat-number" data-target="{{ safe_moving_hours }}">0</div>
             <div class="stat-subtext">Hours</div>
             <div class="spin-gear">⚙️</div>
         </div>
 
         <div class="stat-card" style="border-top-color: #6CBE45;">
             <div class="stat-title">Elevation Climbed</div>
-            <div class="stat-number" data-target="{{ site.data.automated_stats.total_elevation_ft | default: 0 }}">0</div>
-            <div class="stat-subtext">Feet</div>
-            <svg class="mountain-graphic" viewBox="0 0 100 50">
-                <path class="mountain-path" d="M5,45 L30,15 L50,35 L80,5 L95,45" />
-            </svg>
-        </div>
-
-        <div class="stat-card" style="border-top-color: #FF6319;">
-            <div class="stat-title">Longest Single Day</div>
-            <div class="stat-number" data-target="{{ site.data.automated_stats.longest_day_miles | default: 0 }}">0</div>
-            <div class="stat-subtext">Miles</div>
-            <div class="fire-emoji">🔥</div>
-        </div>
-
-        <div class="stat-card" style="border-top-color: #FCCC0A;">
-            <div class="stat-title">Donuts Burned</div>
-            {% assign cals = site.data.automated_stats.total_calories | default: 0 %}
-            <div class="stat-number" data-target="{{ cals | divided_by: 250 }}">0</div>
-            <div class="pop-up-emoji" style="animation-delay: 1.5s;">🍩</div>
-        </div>
-
-        <div class="stat-card" style="border-top-color: #0039A6;">
-            <div class="stat-title">Nights in a Tent</div>
-            <div class="stat-number" data-target="{{ site.data.fun_stats.nights_tent | default: 0 }}">0</div>
-            <div class="pop-up-emoji">⛺️</div>
-        </div>
-
-        <div class="stat-card" style="border-top-color: #6CBE45;">
-            <div class="stat-title">Nights in a Bed</div>
-            <div class="stat-number" data-target="{{ site.data.fun_stats.nights_bed | default: 0 }}">0</div>
-            <div class="pop-up-emoji">🛏️</div>
-        </div>
-
-        <div class="stat-card" style="border-top-color: #EE352E;">
-            <div class="stat-title">Hot Dogs Consumed</div>
-            <div class="stat-number" data-target="{{ site.data.fun_stats.hot_dogs | default: 0 }}">0</div>
-            <div class="hotdog-container" id="hotdog-box"></div>
-        </div>
-
-    </div>
-</div>
-
-<script>
-    document.addEventListener("DOMContentLoaded", function() {
-        
-        // BULLETPROOF JS FIX: Wrapped the Liquid tag in quotes so it defaults cleanly
-        const hotDogTarget = parseInt("{{ site.data.fun_stats.hot_dogs | default: 0 }}", 10) || 0;
-        const hotDogBox = document.getElementById('hotdog-box');
-        const displayLimit = Math.
+            <div class="stat-number" data-target="{{ safe_elevation_ft }}">0</div>
+            <div
