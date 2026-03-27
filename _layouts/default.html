@@ -187,21 +187,27 @@
             const footer = document.querySelector('.site-footer');
             const trigger = document.getElementById('footer-trigger');
             
-            // Watch the invisible tripwire at the bottom of the page
             const observer = new IntersectionObserver((entries) => {
+                // Measure the page: Is it actually taller than the screen?
+                // (We add a small 50px buffer to account for mobile browser URL bars)
+                const isScrollable = document.documentElement.scrollHeight > (window.innerHeight + 50);
+
                 entries.forEach(entry => {
-                    if (entry.isIntersecting) {
-                        // User scrolled to the bottom -> Expand
+                    // Only expand if the tripwire is hit AND the page is actually scrollable
+                    if (entry.isIntersecting && isScrollable) {
                         footer.classList.add('expanded');
                     } else {
-                        // User scrolled back up -> Shrink
                         footer.classList.remove('expanded');
                     }
                 });
-            }, { rootMargin: '0px 0px 50px 0px' }); // Triggers just before they hit the absolute bottom
+            }, { rootMargin: '0px 0px 50px 0px' }); 
 
             if (trigger) {
-                observer.observe(trigger);
+                // A tiny half-second delay ensures heavy items (like the Map) 
+                // finish loading their height before the script measures the page
+                setTimeout(() => {
+                    observer.observe(trigger);
+                }, 500);
             }
         });
     </script>
