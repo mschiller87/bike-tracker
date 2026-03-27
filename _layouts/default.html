@@ -8,18 +8,16 @@
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     
     <style>
-        /* FIX 1: Removed 'height: 100%' so the entire page can organically grow */
         html, body { overflow-x: hidden; width: 100%; margin: 0; padding: 0; }
 
         body { 
             display: flex; flex-direction: column; min-height: 100vh;
             font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; 
             background-color: #f8f9fa;
-            /* Now the background grid will scroll normally with the page */
             background-image:
               linear-gradient(to right, #e9ecef 1px, transparent 1px),
               linear-gradient(to bottom, #e9ecef 1px, transparent 1px);
-            background-attachment: fixed; /* Keeps the grid looking crisp while scrolling */
+            background-attachment: fixed; 
             background-size: 60px 30px; 
             color: #121212;
         }
@@ -53,24 +51,30 @@
         .tab-yellow { background-color: #FCCC0A; } 
 
         .container {
-            /* FIX 2: flex '1 0 auto' ensures the container pushes the footer all the way down without clipping */
             flex: 1 0 auto;
             width: 100%;
             max-width: 800px; margin: 0 auto;
-            background-color: white; padding: 0;
+            background-color: white; 
+            /* Added padding so the floating coffee bar doesn't cover your last post's content */
+            padding-bottom: 70px; 
             box-shadow: 0 0 20px rgba(0,0,0,0.05);
-            /* Removed overflow-x hidden here so it doesn't create a secondary scroll area */
         }
 
-        /* --- THE SLIM, HOVER-REVEAL FOOTER --- */
+        /* --- THE FIXED, DRAG-UP FOOTER --- */
         .site-footer {
+            /* Fixes the footer permanently to the bottom of the screen */
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            z-index: 999;
             background-color: #121212;
             color: #fff;
             text-align: center;
             padding: 15px 20px; 
-            margin-top: auto;
             border-top: 4px solid #FF6319; 
-            transition: padding 0.4s ease;
+            /* Adds a slight shadow to make it pop over the content */
+            box-shadow: 0 -4px 20px rgba(0,0,0,0.3);
         }
 
         .footer-content {
@@ -81,31 +85,32 @@
             align-items: center;
         }
 
+        .footer-links { 
+            display: flex; 
+            justify-content: center; 
+            align-items: center;
+        }
+
         .footer-hidden-text {
             max-height: 0;
             opacity: 0;
             overflow: hidden;
-            transition: all 0.4s cubic-bezier(0.25, 1, 0.5, 1);
+            transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); /* Gives it a slight "pop" as it reveals */
             display: flex;
             flex-direction: column;
             align-items: center;
             gap: 5px;
         }
 
-        .site-footer:hover .footer-hidden-text {
+        /* When the JS adds the .expanded class, this triggers */
+        .site-footer.expanded .footer-hidden-text {
             max-height: 80px; 
             opacity: 1;
-            margin-bottom: 15px; 
+            margin-top: 15px; 
         }
 
         .footer-logo { font-size: clamp(1rem, 4vw, 1.5rem); font-weight: 900; letter-spacing: -1px; text-transform: uppercase; margin: 0; }
         .footer-desc { font-size: clamp(0.6rem, 2.5vw, 0.8rem); color: #888; text-transform: uppercase; letter-spacing: 1px; margin: 0; }
-
-        .footer-links { 
-            display: flex; 
-            justify-content: center; 
-            align-items: center;
-        }
         
         .link-footer {
             color: #aaa;
@@ -125,9 +130,7 @@
             .mta-tabs { height: 32px; } 
             .tab-icon { width: 16px; height: 16px; } 
             .mta-tab { font-size: 0.7rem; } 
-            
             .site-footer { padding: 10px 15px; }
-            .site-footer:hover .footer-hidden-text { margin-bottom: 10px; }
         }
     </style>
 </head>
@@ -163,18 +166,45 @@
         {{ content }}
     </div>
 
+    <div id="footer-trigger" style="height: 1px; width: 100%;"></div>
+
     <footer class="site-footer">
         <div class="footer-content">
+            
+            <div class="footer-links">
+                <a href="https://buymeacoffee.com/mschiller87?new=1" target="_blank" class="link-footer link-tip">☕️ Buy the Rider a Coffee</a>
+            </div>
+
             <div class="footer-hidden-text">
                 <h3 class="footer-logo">The Transcontinental</h3>
                 <p class="footer-desc">Riding East. Summer 2026.</p>
             </div>
             
-            <div class="footer-links">
-                <a href="https://buymeacoffee.com/mschiller87?new=1" target="_blank" class="link-footer link-tip">☕️ Buy the Rider a Coffee</a>
-            </div>
         </div>
     </footer>
 
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            const footer = document.querySelector('.site-footer');
+            const trigger = document.getElementById('footer-trigger');
+            
+            // Watch the invisible tripwire at the bottom of the page
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        // User scrolled to the bottom -> Expand
+                        footer.classList.add('expanded');
+                    } else {
+                        // User scrolled back up -> Shrink
+                        footer.classList.remove('expanded');
+                    }
+                });
+            }, { rootMargin: '0px 0px 50px 0px' }); // Triggers just before they hit the absolute bottom
+
+            if (trigger) {
+                observer.observe(trigger);
+            }
+        });
+    </script>
 </body>
 </html>
