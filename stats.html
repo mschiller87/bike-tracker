@@ -61,37 +61,27 @@ title: Stats
     }
 
     /* --- CUSTOM ANIMATIONS --- */
-
-    /* The Spinning Gear (Now stops after 1 spin!) */
     .spin-gear { font-size: 2.5rem; display: inline-block; }
     .stat-card.in-view .spin-gear { animation: spin 3s ease-out forwards; animation-delay: 0.5s; }
-    @keyframes spin { 
-        0% { transform: rotate(0deg); }
-        100% { transform: rotate(360deg); } 
-    }
+    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
-    /* The Pop-Up Emoji (Tents, Beds, Donuts) */
     .pop-up-emoji { font-size: 2.5rem; display: inline-block; opacity: 0; transform: scale(0); }
     .stat-card.in-view .pop-up-emoji { animation: popUp 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; animation-delay: 1s; }
     @keyframes popUp { to { opacity: 1; transform: scale(1); } }
 
-    /* The Flaming Longest Day */
     .fire-emoji { font-size: 2.5rem; display: inline-block; transform-origin: bottom; }
     .stat-card.in-view .fire-emoji { animation: flicker 2s infinite alternate; }
     @keyframes flicker { 0% { transform: scale(1) rotate(-5deg); } 100% { transform: scale(1.1) rotate(5deg); } }
 
-    /* Elevation Mountain Animation */
     .mountain-graphic { width: 100px; height: 50px; margin: 0 auto; }
     .mountain-path { fill: none; stroke: #6CBE45; stroke-width: 4; stroke-linecap: round; stroke-linejoin: round; stroke-dasharray: 200; stroke-dashoffset: 200; }
     .stat-card.in-view .mountain-path { animation: climbMountain 3s ease-out forwards; animation-delay: 0.5s; }
     @keyframes climbMountain { to { stroke-dashoffset: 0; } }
 
-    /* Hot Dog Stacking Animation */
     .hotdog-container { font-size: 2rem; display: flex; justify-content: center; flex-wrap: wrap; gap: 5px; min-height: 40px; }
     .hotdog-emoji { opacity: 0; transform: translateY(-20px); }
     .stat-card.in-view .hotdog-emoji { animation: dropIn 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
     @keyframes dropIn { to { opacity: 1; transform: translateY(0); } }
-
 </style>
 
 <div class="stats-container">
@@ -128,7 +118,8 @@ title: Stats
 
         <div class="stat-card" style="border-top-color: #FCCC0A;">
             <div class="stat-title">Donuts Burned</div>
-            <div class="stat-number" data-target="{{ site.data.automated_stats.total_calories | divided_by: 250 | default: 0 }}">0</div>
+            {% assign cals = site.data.automated_stats.total_calories | default: 0 %}
+            <div class="stat-number" data-target="{{ cals | divided_by: 250 }}">0</div>
             <div class="pop-up-emoji" style="animation-delay: 1.5s;">🍩</div>
         </div>
 
@@ -156,20 +147,7 @@ title: Stats
 <script>
     document.addEventListener("DOMContentLoaded", function() {
         
-        const hotDogTarget = {{ site.data.fun_stats.hot_dogs | default: 0 }};
+        // BULLETPROOF JS FIX: Wrapped the Liquid tag in quotes so it defaults cleanly
+        const hotDogTarget = parseInt("{{ site.data.fun_stats.hot_dogs | default: 0 }}", 10) || 0;
         const hotDogBox = document.getElementById('hotdog-box');
-        const displayLimit = Math.min(hotDogTarget, 15); 
-        for(let i=0; i < displayLimit; i++) {
-            let hd = document.createElement('span');
-            hd.className = 'hotdog-emoji';
-            hd.innerText = '🌭';
-            hd.style.animationDelay = (0.5 + (i * 0.3)) + 's';
-            hotDogBox.appendChild(hd);
-        }
-
-        const observer = new IntersectionObserver((entries) => {
-            const visibleEntries = entries.filter(entry => entry.isIntersecting);
-            
-            visibleEntries.forEach((entry, index) => {
-                setTimeout(() => {
-                    entry.target.classList.add('in-view');
+        const displayLimit = Math.
