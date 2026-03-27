@@ -32,11 +32,10 @@ jobs:
           STRAVA_REFRESH_TOKEN: ${{ secrets.STRAVA_REFRESH_TOKEN }}
         run: python update_strava.py
 
-      - name: Commit and push changes
+     - name: Commit and push changes
         run: |
-          git config --local user.email "action@github.com"
-          git config --local user.name "GitHub Action"
-          # We added the _data/ folder to the packing list right here!
-          git add strava_rides.geojson _posts/ images/ _data/
-          git commit -m "Auto-update Strava rides, posts, photos, and stats" || echo "No changes to commit"
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git add .
+          git commit -m "Automated Strava sync" || echo "No changes to commit"
           git push
