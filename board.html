@@ -26,88 +26,39 @@ title: Message Board
         margin-bottom: 10px;
     }
 
-    /* ---------------------------------------------------
-       CUSTOMIZING THE THIRD-PARTY WIDGET 
-       --------------------------------------------------- */
-    
-    #HCB_comment_box {
+    /* Giscus container styling */
+    .giscus {
         background: #fff;
-        padding: 30px;
+        padding: 20px;
         border: 1px solid #e0e0e0;
         box-shadow: 0 4px 10px rgba(0,0,0,0.05);
         border-top: 6px solid #EE352E;
-    }
-    
-    /* Hide the widget's default messy header and links */
-    #HCB_comment_box h3, 
-    #HCB_comment_box .hcb-link, 
-    #HCB_comment_box .home-desc {
-        display: none !important;
-    }
-    
-    /* Style the Text Box */
-    #HCB_comment_box textarea {
-        width: 100% !important;
-        box-sizing: border-box;
-        border: 2px solid #ccc !important;
-        border-radius: 0 !important;
-        padding: 15px !important;
-        font-family: inherit;
-        font-size: 1rem;
-        margin-bottom: 10px;
-    }
-    #HCB_comment_box textarea:focus {
-        border-color: #EE352E !important;
-        outline: none;
-    }
-    
-    /* Style the Inputs (Name, Email, etc.) */
-    #HCB_comment_box input[type="text"] {
-        padding: 10px !important;
-        border: 1px solid #ccc !important;
-        font-family: inherit;
-        margin-bottom: 15px;
-    }
-
-    /* Style the Submit Button */
-    #HCB_comment_box .submit {
-        background-color: #121212 !important;
-        color: white !important;
-        border: none !important;
-        padding: 10px 25px !important;
-        text-transform: uppercase;
-        font-weight: bold;
-        cursor: pointer;
-        transition: background-color 0.2s;
-    }
-    #HCB_comment_box .submit:hover {
-        background-color: #EE352E !important;
-    }
-
-    /* Style the actual published comments */
-    .hcb-comment {
-        border-top: 1px solid #eee;
-        padding: 20px 0;
-    }
-    .hcb-comment .author {
-        font-weight: bold;
-        color: #0039A6; 
-        text-transform: uppercase;
-        font-size: 0.9rem;
-    }
-    .hcb-comment .date {
-        font-size: 0.75rem;
-        color: #888;
-        margin-left: 10px;
     }
 </style>
 
 <div class="board-container">
     <div class="board-header">
         <h2>Message Board</h2>
-        <p style="color: #666; text-transform: uppercase; letter-spacing: 1px; font-size: 0.85rem;">Leave a note, ask a question, or drop some encouragement!</p>
+        <p style="color: #666; text-transform: uppercase; letter-spacing: 1px; font-size: 0.85rem;">
+            Powered by GitHub Discussions. Log in with GitHub to post!
+        </p>
     </div>
 
-    <div id="HCB_comment_box">Loading community feed...</div>
-    <script type="text/javascript" id="hcb"> /**/ </script>
+    <div class="giscus">
+        <script src="https://giscus.app/client.js"
+                data-repo="mschiller87/bike-tracker"
+                data-repo-id="R_kgDORxEVrw" 
+                data-category="Announcements"
+                data-category-id="DIC_kwDORxEVr84C5YE4"
+                data-mapping="pathname"
+                data-strict="0"
+                data-reactions-enabled="1"
+                data-emit-metadata="0"
+                data-input-position="top"
+                data-theme="light"
+                data-lang="en"
+                crossorigin="anonymous"
+                async>
+        </script>
+    </div>
 </div>
