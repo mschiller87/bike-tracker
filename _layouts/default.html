@@ -57,27 +57,25 @@
         .mta-tabs {
             display: flex;
             width: 100%;
-            height: 45px; /* Creates a thick, clickable ribbon */
+            height: 35px; /* Shrunk down for a sleeker profile */
         }
         
         .mta-tab {
-            flex: 1; /* Inactive tabs shrink down to an equal, minimal width */
+            flex: 1; 
             display: flex;
             align-items: center;
             justify-content: center;
             text-decoration: none;
             color: white;
             font-weight: bold;
-            font-size: 0.95rem;
+            font-size: 0.8rem; /* Shrunk the font size to match the sleeker bar */
             text-transform: uppercase;
             letter-spacing: 1px;
-            overflow: hidden; /* Hides text that spills out when shrunk */
+            overflow: hidden; 
             cursor: pointer;
-            /* The transition makes the expansion buttery smooth */
             transition: flex 0.4s cubic-bezier(0.25, 1, 0.5, 1);
         }
 
-        /* The hidden text inside the tabs */
         .mta-tab span {
             opacity: 0;
             max-width: 0;
@@ -85,13 +83,11 @@
             transition: all 0.4s ease;
         }
 
-        /* What happens when you hover OR when the tab is currently active */
         .mta-tab:hover, 
         .mta-tab.active {
-            flex: 4; /* Multiplies the width of the active/hovered block! */
+            flex: 4; 
         }
 
-        /* Fade in and expand the text */
         .mta-tab:hover span, 
         .mta-tab.active span {
             opacity: 1;
@@ -104,7 +100,7 @@
         .tab-orange { background-color: #FF6319; }
         .tab-green  { background-color: #6CBE45; }
         .tab-red    { background-color: #EE352E; }
-        .tab-yellow { background-color: #FCCC0A; color: #121212; } /* Dark text for the yellow tab to ensure readability */
+        .tab-yellow { background-color: #FCCC0A; color: #121212; } 
 
         /* The Content Wrapper */
         .container {
@@ -126,7 +122,7 @@
         </div>
         
         <nav class="mta-tabs">
-            <a href="{{ site.baseurl }}/" class="mta-tab tab-blue {% unless page.url contains 'tracker' %}active{% endunless %}">
+            <a href="{{ site.baseurl }}/" class="mta-tab tab-blue {% if page.url == '/' or page.url == '/index.html' %}active{% endif %}">
                 <span>Journal</span>
             </a>
             
@@ -134,16 +130,16 @@
                 <span>Live Map</span>
             </a>
             
-            <a href="#" class="mta-tab tab-green">
-                <span>Route</span>
+            <a href="{{ site.baseurl }}/photos.html" class="mta-tab tab-green {% if page.url contains 'photos' %}active{% endif %}">
+                <span>Photos</span>
             </a>
             
-            <a href="#" class="mta-tab tab-red">
-                <span>Gear List</span>
+            <a href="{{ site.baseurl }}/board.html" class="mta-tab tab-red {% if page.url contains 'board' %}active{% endif %}">
+                <span>Message Board</span>
             </a>
             
-            <a href="#" class="mta-tab tab-yellow">
-                <span>About</span>
+            <a href="{{ site.baseurl }}/stats.html" class="mta-tab tab-yellow {% if page.url contains 'stats' %}active{% endif %}">
+                <span>Stats</span>
             </a>
         </nav>
     </header>
