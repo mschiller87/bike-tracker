@@ -169,10 +169,10 @@ def update_fun_stats():
     total_tents = 0
     total_beds = 0
     
-    # We include variations of the emoji to account for different phone keyboards
-    hotdog_emojis = ['🌭']
-    tent_emojis = ['⛺', '⛺️']
-    bed_emojis = ['🛏', '🛏️']
+    # Using ONLY the base unicode character prevents the "Double Count" bug!
+    hotdog_base = '🌭'
+    tent_base = '⛺'
+    bed_base = '🛏'
     
     if os.path.exists(posts_dir):
         for filename in os.listdir(posts_dir):
@@ -180,13 +180,10 @@ def update_fun_stats():
                 with open(os.path.join(posts_dir, filename), 'r', encoding='utf-8') as f:
                     content = f.read()
                     
-                    # Count emojis in the raw markdown text
-                    for emoji in hotdog_emojis:
-                        total_hot_dogs += content.count(emoji)
-                    for emoji in tent_emojis:
-                        total_tents += content.count(emoji)
-                    for emoji in bed_emojis:
-                        total_beds += content.count(emoji)
+                    # Count base emojis
+                    total_hot_dogs += content.count(hotdog_base)
+                    total_tents += content.count(tent_base)
+                    total_beds += content.count(bed_base)
                         
     fun_stats = {
         'hot_dogs': total_hot_dogs,
@@ -194,11 +191,12 @@ def update_fun_stats():
         'nights_bed': total_beds
     }
     
+    # Save to the data folder
     os.makedirs('_data', exist_ok=True)
     with open('_data/fun_stats.yml', 'w', encoding='utf-8') as f:
         yaml.dump(fun_stats, f, default_flow_style=False, sort_keys=False)
     
     print(f"✅ Fun Stats Updated: {total_hot_dogs} Hot Dogs, {total_tents} Tents, {total_beds} Beds")
 
-# Run the function!
+# Run the function
 update_fun_stats()
