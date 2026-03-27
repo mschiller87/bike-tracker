@@ -1,0 +1,156 @@
+---
+layout: default
+title: Photo Gallery
+---
+
+<style>
+    /* 1. The Dynamic CSS Grid */
+    .gallery-container {
+        max-width: 1000px;
+        margin: 40px auto;
+        padding: 0 20px;
+    }
+
+    .photo-grid {
+        display: grid;
+        /* This line is the magic: It automatically fits as many 110px columns as possible! */
+        grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+        gap: 10px;
+    }
+
+    .photo-item {
+        width: 100%;
+        aspect-ratio: 1 / 1; /* Forces the thumbnail to be a perfect square */
+        object-fit: cover; /* Crops the image so it doesn't squish */
+        border-radius: 4px;
+        cursor: pointer;
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+        background-color: #f4f4f4;
+    }
+
+    .photo-item:hover {
+        transform: scale(1.03);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        z-index: 2;
+    }
+
+    @media (min-width: 600px) {
+        /* On larger screens, make the thumbnails slightly bigger */
+        .photo-grid { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 15px; }
+    }
+
+    /* 2. The Full-Screen Lightbox */
+    #lightbox {
+        display: none; /* Hidden by default */
+        position: fixed;
+        top: 0; left: 0; width: 100%; height: 100%;
+        background-color: rgba(18, 18, 18, 0.95); /* MTA Black, slightly transparent */
+        z-index: 2000; /* Sits completely on top of your sticky header */
+        align-items: center;
+        justify-content: center;
+        flex-direction: column;
+    }
+
+    #lightbox img {
+        max-width: 90vw;
+        max-height: 85vh;
+        object-fit: contain;
+        box-shadow: 0 0 30px rgba(0,0,0,0.5);
+        border: 2px solid #333;
+    }
+
+    /* Lightbox Controls */
+    .lightbox-btn {
+        position: absolute;
+        top: 50%;
+        transform: translateY(-50%);
+        background: rgba(0,0,0,0.5);
+        color: white;
+        border: none;
+        font-size: 2rem;
+        padding: 15px 20px;
+        cursor: pointer;
+        transition: background 0.2s;
+    }
+    .lightbox-btn:hover { background: #FF6319; /* MTA Orange highlight! */ }
+    
+    #prev-btn { left: 20px; }
+    #next-btn { right: 20px; }
+
+    #close-btn {
+        position: absolute;
+        top: 20px;
+        right: 30px;
+        background: none;
+        color: white;
+        border: none;
+        font-size: 2.5rem;
+        cursor: pointer;
+    }
+    #close-btn:hover { color: #EE352E; /* MTA Red highlight! */ }
+</style>
+
+<div class="gallery-container">
+    <h2 style="text-transform: uppercase; letter-spacing: 1px; color: #333; margin-bottom: 20px; border-bottom: 3px solid #6CBE45; display: inline-block; padding-bottom: 5px;">Journey Gallery</h2>
+    
+    <div class="photo-grid" id="photo-grid">
+        {% assign image_index = 0 %}
+        {% for file in site.static_files %}
+            {% if file.extname == '.jpg' or file.extname == '.jpeg' or file.extname == '.JPG' %}
+                <img src="{{ site.baseurl }}{{ file.path }}" class="photo-item" onclick="openLightbox({{ image_index }})" alt="Gallery Image">
+                {% assign image_index = image_index | plus: 1 %}
+            {% endif %}
+        {% endfor %}
+    </div>
+</div>
+
+<div id="lightbox">
+    <button id="close-btn" onclick="closeLightbox()">&times;</button>
+    <button id="prev-btn" class="lightbox-btn" onclick="changeImage(-1)">&#10094;</button>
+    <img id="lightbox-img" src="" alt="Full size image">
+    <button id="next-btn" class="lightbox-btn" onclick="changeImage(1)">&#10095;</button>
+</div>
+
+<script>
+    // Build an array of all the image URLs using Liquid
+    const images = [
+        {% for file in site.static_files %}
+            {% if file.extname == '.jpg' or file.extname == '.jpeg' or file.extname == '.JPG' %}
+                "{{ site.baseurl }}{{ file.path }}",
+            {% endif %}
+        {% endfor %}
+    ];
+
+    let currentIndex = 0;
+    const lightbox = document.getElementById('lightbox');
+    const lightboxImg = document.getElementById('lightbox-img');
+
+    function openLightbox(index) {
+        currentIndex = index;
+        lightboxImg.src = images[currentIndex];
+        lightbox.style.display = 'flex';
+        document.body.style.overflow = 'hidden'; // Stop background scrolling
+    }
+
+    function closeLightbox() {
+        lightbox.style.display = 'none';
+        document.body.style.overflow = 'auto'; // Re-enable background scrolling
+    }
+
+    function changeImage(direction) {
+        currentIndex += direction;
+        // Loop back to the start/end if you click past the edges
+        if (currentIndex >= images.length) currentIndex = 0;
+        if (currentIndex < 0) currentIndex = images.length - 1;
+        lightboxImg.src = images[currentIndex];
+    }
+
+    // Bonus: Let users use their keyboard arrows and Esc key!
+    document.addEventListener('keydown', function(event) {
+        if (lightbox.style.display === 'flex') {
+            if (event.key === 'ArrowRight') changeImage(1);
+            if (event.key === 'ArrowLeft') changeImage(-1);
+            if (event.key === 'Escape') closeLightbox();
+        }
+    });
+</script>
