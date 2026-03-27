@@ -11,18 +11,6 @@ title: Stats
         font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
     }
 
-    .stats-header {
-        font-size: 2.5rem;
-        font-weight: 900;
-        text-transform: uppercase;
-        letter-spacing: -1.5px;
-        margin-bottom: 30px;
-        color: #121212;
-        border-bottom: 6px solid #FCCC0A; /* MTA Yellow Accent */
-        display: inline-block;
-        padding-bottom: 5px;
-    }
-
     .stats-grid {
         display: grid;
         grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -47,13 +35,22 @@ title: Stats
         transform: translateY(-5px);
     }
 
-    .stat-value {
+    .stat-icon {
+        font-size: 2.5rem;
+        margin-bottom: 10px;
+        user-select: none;
+    }
+
+    .stat-value-container {
         font-size: 3rem;
         font-weight: 900;
         color: #121212;
         line-height: 1;
         margin-bottom: 10px;
         letter-spacing: -2px;
+        display: flex;
+        align-items: baseline;
+        justify-content: center;
     }
 
     .stat-label {
@@ -64,57 +61,131 @@ title: Stats
         letter-spacing: 1px;
     }
 
-    /* Distinct Colors for Weather & Milestones */
-    .card-hot { border-top-color: #EE352E; } /* Red */
-    .card-cold { border-top-color: #0039A6; } /* Blue */
-    .card-food { border-top-color: #FCCC0A; } /* Yellow */
-    .card-sleep { border-top-color: #6CBE45; } /* Green */
+    /* Distinct Colors for Card Tops */
+    .card-miles { border-top-color: #121212; } 
+    .card-hot { border-top-color: #EE352E; } 
+    .card-cold { border-top-color: #0039A6; } 
+    .card-food { border-top-color: #FCCC0A; } 
+    .card-sleep { border-top-color: #6CBE45; } 
 
     @media (max-width: 600px) {
         .stats-grid { grid-template-columns: 1fr 1fr; gap: 15px; }
-        .stat-value { font-size: 2.2rem; }
+        .stat-value-container { font-size: 2.2rem; }
+        .stat-icon { font-size: 2rem; }
     }
 </style>
 
 <div class="stats-container">
-    <h1 class="stats-header">By The Numbers</h1>
-
     <div class="stats-grid">
         
-        <div class="stat-card">
-            <div class="stat-value">{{ site.posts.first.total_miles | default: 0 | round }}</div>
+        <div class="stat-card card-miles">
+            <div class="stat-icon">🚲</div>
+            <div class="stat-value-container">
+                <span class="counter" data-target="{{ site.posts.first.total_miles | default: 0 | round }}">0</span>
+            </div>
             <div class="stat-label">Miles Ridden</div>
         </div>
 
-        <div class="stat-card">
-            <div class="stat-value">{{ site.posts.size | default: 0 }}</div>
+        <div class="stat-card card-miles">
+            <div class="stat-icon">🗓️</div>
+            <div class="stat-value-container">
+                <span class="counter" data-target="{{ site.posts.size | default: 0 }}">0</span>
+            </div>
             <div class="stat-label">Days on Road</div>
         </div>
 
         <div class="stat-card card-food">
-            <div class="stat-value">{{ site.data.fun_stats.hot_dogs | default: 0 }}</div>
+            <div class="stat-icon">🍩</div>
+            <div class="stat-value-container">
+                <span class="counter" data-target="{{ site.data.fun_stats.donuts | default: 0 }}">0</span>
+            </div>
+            <div class="stat-label">Donuts Burned</div>
+        </div>
+
+        <div class="stat-card card-food">
+            <div class="stat-icon">🌭</div>
+            <div class="stat-value-container">
+                <span class="counter" data-target="{{ site.data.fun_stats.hot_dogs | default: 0 }}">0</span>
+            </div>
             <div class="stat-label">Hot Dogs Eaten</div>
         </div>
 
         <div class="stat-card card-sleep">
-            <div class="stat-value">{{ site.data.fun_stats.nights_tent | default: 0 }}</div>
+            <div class="stat-icon">⛺</div>
+            <div class="stat-value-container">
+                <span class="counter" data-target="{{ site.data.fun_stats.nights_tent | default: 0 }}">0</span>
+            </div>
             <div class="stat-label">Nights in Tent</div>
         </div>
 
         <div class="stat-card card-sleep">
-            <div class="stat-value">{{ site.data.fun_stats.nights_bed | default: 0 }}</div>
+            <div class="stat-icon">🛏️</div>
+            <div class="stat-value-container">
+                <span class="counter" data-target="{{ site.data.fun_stats.nights_bed | default: 0 }}">0</span>
+            </div>
             <div class="stat-label">Nights in Bed</div>
         </div>
 
         <div class="stat-card card-hot">
-            <div class="stat-value">{{ site.data.fun_stats.hottest_day | default: 0 }}&deg;F</div>
+            <div class="stat-icon">🔥</div>
+            <div class="stat-value-container">
+                <span class="counter" data-target="{{ site.data.fun_stats.hottest_day | default: 0 }}">0</span>&deg;F
+            </div>
             <div class="stat-label">Hottest Ride</div>
         </div>
 
         <div class="stat-card card-cold">
-            <div class="stat-value">{{ site.data.fun_stats.coldest_night | default: 0 }}&deg;F</div>
+            <div class="stat-icon">❄️</div>
+            <div class="stat-value-container">
+                <span class="counter" data-target="{{ site.data.fun_stats.coldest_night | default: 0 }}">0</span>&deg;F
+            </div>
             <div class="stat-label">Coldest Night</div>
         </div>
 
     </div>
 </div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", () => {
+        const counters = document.querySelectorAll('.counter');
+        
+        const observer = new IntersectionObserver((entries, observer) => {
+            entries.forEach(entry => {
+                // When the card scrolls into view, start counting
+                if (entry.isIntersecting) {
+                    const counter = entry.target;
+                    const target = +counter.getAttribute('data-target');
+                    
+                    // Failsafe for missing data or zero
+                    if (target <= 0) {
+                        counter.innerText = target;
+                        observer.unobserve(counter);
+                        return;
+                    }
+
+                    const duration = 1500; // Animation time in milliseconds
+                    const frameRate = 1000 / 60; // 60 frames per second
+                    const totalFrames = Math.round(duration / frameRate);
+                    const increment = target / totalFrames;
+                    
+                    let currentCount = 0;
+                    
+                    const updateCounter = setInterval(() => {
+                        currentCount += increment;
+                        if (currentCount >= target) {
+                            counter.innerText = target; // Lock to exact target number
+                            clearInterval(updateCounter);
+                        } else {
+                            counter.innerText = Math.ceil(currentCount);
+                        }
+                    }, frameRate);
+                    
+                    // Stop watching this card so it only animates once
+                    observer.unobserve(counter);
+                }
+            });
+        }, { threshold: 0.2 });
+
+        counters.forEach(counter => observer.observe(counter));
+    });
+</script>
