@@ -36,6 +36,7 @@ jobs:
         run: |
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
-          git add strava_rides.geojson _posts/ images/
-          git commit -m "Auto-update Strava rides, posts, and photos" || echo "No changes to commit"
+          # We added the _data/ folder to the packing list right here!
+          git add strava_rides.geojson _posts/ images/ _data/
+          git commit -m "Auto-update Strava rides, posts, photos, and stats" || echo "No changes to commit"
           git push
