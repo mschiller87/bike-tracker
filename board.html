@@ -1,0 +1,116 @@
+---
+layout: default
+title: Message Board
+---
+
+<style>
+    .board-container {
+        max-width: 800px;
+        margin: 40px auto;
+        padding: 0 20px;
+        font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    }
+    
+    .board-header {
+        text-align: center;
+        margin-bottom: 40px;
+    }
+
+    .board-header h2 {
+        color: #121212;
+        text-transform: uppercase;
+        border-bottom: 4px solid #EE352E; /* MTA Red Accent for the Board */
+        display: inline-block;
+        padding-bottom: 5px;
+        letter-spacing: -0.5px;
+        margin-bottom: 10px;
+    }
+
+    /* ---------------------------------------------------
+       CUSTOMIZING THE THIRD-PARTY WIDGET 
+       We use CSS to force their widget to match our site!
+       --------------------------------------------------- */
+    
+    #HCB_comment_box {
+        background: #fff;
+        padding: 30px;
+        border: 1px solid #e0e0e0;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+        border-top: 6px solid #EE352E;
+    }
+    
+    /* Hide the widget's default messy header and links */
+    #HCB_comment_box h3, 
+    #HCB_comment_box .hcb-link, 
+    #HCB_comment_box .home-desc {
+        display: none !important;
+    }
+    
+    /* Style the Text Box */
+    #HCB_comment_box textarea {
+        width: 100% !important;
+        box-sizing: border-box;
+        border: 2px solid #ccc !important;
+        border-radius: 0 !important;
+        padding: 15px !important;
+        font-family: inherit;
+        font-size: 1rem;
+        margin-bottom: 10px;
+    }
+    #HCB_comment_box textarea:focus {
+        border-color: #EE352E !important;
+        outline: none;
+    }
+    
+    /* Style the Inputs (Name, Email, etc.) */
+    #HCB_comment_box input[type="text"] {
+        padding: 10px !important;
+        border: 1px solid #ccc !important;
+        font-family: inherit;
+        margin-bottom: 15px;
+    }
+
+    /* Style the Submit Button */
+    #HCB_comment_box .submit {
+        background-color: #121212 !important;
+        color: white !important;
+        border: none !important;
+        padding: 10px 25px !important;
+        text-transform: uppercase;
+        font-weight: bold;
+        cursor: pointer;
+        transition: background-color 0.2s;
+    }
+    #HCB_comment_box .submit:hover {
+        background-color: #EE352E !important;
+    }
+
+    /* Style the actual published comments */
+    .hcb-comment {
+        border-top: 1px solid #eee;
+        padding: 20px 0;
+    }
+    .hcb-comment .author {
+        font-weight: bold;
+        color: #0039A6; /* MTA Blue for Usernames */
+        text-transform: uppercase;
+        font-size: 0.9rem;
+    }
+    .hcb-comment .date {
+        font-size: 0.75rem;
+        color: #888;
+        margin-left: 10px;
+    }
+</style>
+
+<div class="board-container">
+    <div class="board-header">
+        <h2>Message Board</h2>
+        <p style="color: #666; text-transform: uppercase; letter-spacing: 1px; font-size: 0.85rem;">Leave a note, ask a question, or drop some encouragement!</p>
+    </div>
+
+    <div id="HCB_comment_box">Loading community feed...</div>
+    <script type="text/javascript" id="hcb"> 
+        /**/ 
+    </script>
+</div>
