@@ -62,12 +62,15 @@ title: Stats
 
     /* --- CUSTOM ANIMATIONS --- */
 
-    /* The Spinning Gear */
+    /* The Spinning Gear (Now stops after 1 spin!) */
     .spin-gear { font-size: 2.5rem; display: inline-block; }
-    .stat-card.in-view .spin-gear { animation: spin 4s linear infinite; }
-    @keyframes spin { 100% { transform: rotate(360deg); } }
+    .stat-card.in-view .spin-gear { animation: spin 3s ease-out forwards; animation-delay: 0.5s; }
+    @keyframes spin { 
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); } 
+    }
 
-    /* The Pop-Up Emoji (Tents and Beds) */
+    /* The Pop-Up Emoji (Tents, Beds, Donuts) */
     .pop-up-emoji { font-size: 2.5rem; display: inline-block; opacity: 0; transform: scale(0); }
     .stat-card.in-view .pop-up-emoji { animation: popUp 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; animation-delay: 1s; }
     @keyframes popUp { to { opacity: 1; transform: scale(1); } }
@@ -124,9 +127,8 @@ title: Stats
         </div>
 
         <div class="stat-card" style="border-top-color: #FCCC0A;">
-            <div class="stat-title">Glazed Donuts Burned</div>
+            <div class="stat-title">Donuts Burned</div>
             <div class="stat-number" data-target="{{ site.data.automated_stats.total_calories | divided_by: 250 | default: 0 }}">0</div>
-            <div class="stat-subtext">Equiv. Calories Burned</div>
             <div class="pop-up-emoji" style="animation-delay: 1.5s;">🍩</div>
         </div>
 
@@ -171,37 +173,3 @@ title: Stats
             visibleEntries.forEach((entry, index) => {
                 setTimeout(() => {
                     entry.target.classList.add('in-view');
-                    
-                    const numberElement = entry.target.querySelector('.stat-number');
-                    if (numberElement && !numberElement.classList.contains('counted')) {
-                        numberElement.classList.add('counted');
-                        const target = parseInt(numberElement.getAttribute('data-target'));
-                        
-                        const duration = 4000; 
-                        const stepTime = 30;
-                        const totalSteps = duration / stepTime;
-                        let current = 0;
-                        
-                        if (target > 0) {
-                            const timer = setInterval(() => {
-                                current += Math.ceil(target / totalSteps); 
-                                if (current >= target) {
-                                    numberElement.innerText = target.toLocaleString();
-                                    clearInterval(timer);
-                                } else {
-                                    numberElement.innerText = current.toLocaleString();
-                                }
-                            }, stepTime);
-                        }
-                    }
-                }, index * 600); 
-                
-                observer.unobserve(entry.target);
-            });
-        }, { threshold: 0.1 });
-
-        document.querySelectorAll('.stat-card').forEach(card => {
-            observer.observe(card);
-        });
-    });
-</script>
