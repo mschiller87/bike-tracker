@@ -87,11 +87,19 @@ title: Stats
         </div>
 
         <div class="stat-card card-miles">
-            <div class="stat-icon">🗓️</div>
+            <div class="stat-icon">⛰️</div>
             <div class="stat-value-container">
-                <span class="counter" data-target="{{ site.posts.size | default: 0 }}">0</span>
+                <span class="counter" data-target="{{ site.data.fun_stats.elevation_feet | default: 0 }}">0</span>
             </div>
-            <div class="stat-label">Days on Road</div>
+            <div class="stat-label">Feet Climbed</div>
+        </div>
+
+        <div class="stat-card card-miles">
+            <div class="stat-icon">⏱️</div>
+            <div class="stat-value-container">
+                <span class="counter" data-target="{{ site.data.fun_stats.hours_biking | default: 0 }}">0</span>
+            </div>
+            <div class="stat-label">Hours Biking</div>
         </div>
 
         <div class="stat-card card-food">
@@ -173,10 +181,10 @@ title: Stats
                     const updateCounter = setInterval(() => {
                         currentCount += increment;
                         if (currentCount >= target) {
-                            counter.innerText = target; // Lock to exact target number
+                            counter.innerText = target.toLocaleString(); // Add commas for large numbers!
                             clearInterval(updateCounter);
                         } else {
-                            counter.innerText = Math.ceil(currentCount);
+                            counter.innerText = Math.ceil(currentCount).toLocaleString();
                         }
                     }, frameRate);
                     
