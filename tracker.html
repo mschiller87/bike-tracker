@@ -26,7 +26,6 @@ title: Live Tracker
         border: none !important;
     }
     
-    /* Small tweak to ensure the Leaflet zoom buttons don't get hidden */
     .leaflet-control-container {
         margin-bottom: 20px;
     }
@@ -45,12 +44,13 @@ title: Live Tracker
         attribution: '&copy; OpenStreetMap &copy; CARTO'
     }).addTo(map);
 
+    // We updated these paths to look inside the new 'gpx' folder!
     var myRoutes = [
-        'TA_01_EB_Main_2022.gpx', 'TA_02_EB_Main_2018.gpx', 'TA_03_EB_Main_2022.gpx',
-        'TA_04_EB_Main_2020.gpx', 'TA_05_EB_Main_2018.gpx', 'TA_06_EB_Main_2018.gpx',
-        'TA_07_EB_Main_2019.gpx', 'TA_08_EB_Main_2019.gpx', 'TA_09_EB_Main_2020.gpx',
-        'R66_01_EB_Main_2020.gpx', 'Great_Lake-to-Lake_Trails_Route__1.gpx',
-        'Hudson_Valley_EST.gpx', 'Erie_Canal_EST_Buffalo-Albany.gpx'
+        'gpx/TA_01_EB_Main_2022.gpx', 'gpx/TA_02_EB_Main_2018.gpx', 'gpx/TA_03_EB_Main_2022.gpx',
+        'gpx/TA_04_EB_Main_2020.gpx', 'gpx/TA_05_EB_Main_2018.gpx', 'gpx/TA_06_EB_Main_2018.gpx',
+        'gpx/TA_07_EB_Main_2019.gpx', 'gpx/TA_08_EB_Main_2019.gpx', 'gpx/TA_09_EB_Main_2020.gpx',
+        'gpx/R66_01_EB_Main_2020.gpx', 'gpx/Great_Lake-to-Lake_Trails_Route__1.gpx',
+        'gpx/Hudson_Valley_EST.gpx', 'gpx/Erie_Canal_EST_Buffalo-Albany.gpx'
     ];
 
     myRoutes.forEach(function(routeFile) {
