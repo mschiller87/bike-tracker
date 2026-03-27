@@ -33,22 +33,26 @@
         
         .header-text {
             padding: 25px 20px 20px 20px;
+            transition: padding 0.3s ease; /* Smooth transition when resizing */
         }
 
+        /* FLUID TYPOGRAPHY: Scales perfectly on any screen! */
         header h1 { 
-            font-size: 3rem; 
+            font-size: clamp(1.5rem, 5vw, 3rem); 
             font-weight: bold; 
             text-transform: uppercase; 
             letter-spacing: -1.5px; 
             margin: 0; 
+            white-space: nowrap; /* Forces it to stay on one line */
         }
         header p {
-            font-size: 0.9rem;
+            font-size: clamp(0.65rem, 2vw, 0.9rem);
             text-transform: uppercase;
             letter-spacing: 2px;
             color: #aaa;
             margin-top: 10px;
             margin-bottom: 0;
+            white-space: nowrap;
         }
 
         /* --------------------------------------
@@ -57,7 +61,8 @@
         .mta-tabs {
             display: flex;
             width: 100%;
-            height: 40px; /* Slightly taller to accommodate the icons comfortably */
+            height: 40px; 
+            transition: height 0.3s ease;
         }
         
         .mta-tab {
@@ -76,25 +81,17 @@
             transition: flex 0.4s cubic-bezier(0.25, 1, 0.5, 1);
         }
 
-        /* ICON CSS */
         .tab-icon {
             width: 20px;
             height: 20px;
             flex-shrink: 0;
             object-fit: contain;
+            transition: width 0.3s, height 0.3s;
         }
 
-        /* CSS Magic: Turns black icons white for dark tabs! */
-        .tab-blue .tab-icon,
-        .tab-orange .tab-icon,
-        .tab-green .tab-icon,
-        .tab-red .tab-icon {
-            filter: invert(1); 
-        }
-        /* Yellow tab text/icon stays black for contrast */
+        .tab-blue .tab-icon, .tab-orange .tab-icon, .tab-green .tab-icon, .tab-red .tab-icon { filter: invert(1); }
         .tab-yellow { color: #121212; }
 
-        /* TEXT ANIMATION CSS */
         .mta-tab span {
             opacity: 0;
             max-width: 0;
@@ -103,27 +100,19 @@
             display: inline-block;
         }
 
-        .mta-tab:hover, 
-        .mta-tab.active {
-            flex: 4; 
-        }
-
-        /* Fades text in and adds a margin to separate it from the icon */
-        .mta-tab:hover span, 
-        .mta-tab.active span {
+        .mta-tab:hover, .mta-tab.active { flex: 4; }
+        .mta-tab:hover span, .mta-tab.active span {
             opacity: 1;
             max-width: 150px; 
             margin-left: 8px; 
         }
 
-        /* Assigning the 5 exact MTA Route Colors */
         .tab-blue   { background-color: #0039A6; }
         .tab-orange { background-color: #FF6319; }
         .tab-green  { background-color: #6CBE45; }
         .tab-red    { background-color: #EE352E; }
         .tab-yellow { background-color: #FCCC0A; } 
 
-        /* The Content Wrapper */
         .container {
             max-width: 800px;
             margin: 0 auto;
@@ -131,6 +120,16 @@
             padding: 0;
             box-shadow: 0 0 20px rgba(0,0,0,0.05);
             min-height: 100vh;
+        }
+
+        /* --- MOBILE SHRINKING MAGIC --- */
+        @media (max-width: 600px) {
+            .header-text { padding: 12px 10px 10px 10px; } /* Slims down the black header height */
+            header p { margin-top: 5px; letter-spacing: 1px; }
+            .mta-tabs { height: 32px; } /* Slims down the colored tab bar */
+            .tab-icon { width: 16px; height: 16px; } /* Shrinks the icons */
+            .mta-tab { font-size: 0.7rem; } /* Shrinks the tab text */
+            .mta-tab:hover span, .mta-tab.active span { max-width: 100px; margin-left: 5px; }
         }
     </style>
 </head>
@@ -147,22 +146,18 @@
                 <img src="{{ site.baseurl }}/images/journal.png" class="tab-icon" alt="Journal">
                 <span>Journal</span>
             </a>
-            
             <a href="{{ site.baseurl }}/tracker.html" class="mta-tab tab-orange {% if page.url contains 'tracker' %}active{% endif %}">
                 <img src="{{ site.baseurl }}/images/live-map.png" class="tab-icon" alt="Live Map">
                 <span>Live Map</span>
             </a>
-            
             <a href="{{ site.baseurl }}/photos.html" class="mta-tab tab-green {% if page.url contains 'photos' %}active{% endif %}">
                 <img src="{{ site.baseurl }}/images/photos.png" class="tab-icon" alt="Photos">
                 <span>Photos</span>
             </a>
-            
             <a href="{{ site.baseurl }}/board.html" class="mta-tab tab-red {% if page.url contains 'board' %}active{% endif %}">
                 <img src="{{ site.baseurl }}/images/message-board.png" class="tab-icon" alt="Message Board">
                 <span>Message Board</span>
             </a>
-            
             <a href="{{ site.baseurl }}/stats.html" class="mta-tab tab-yellow {% if page.url contains 'stats' %}active{% endif %}">
                 <img src="{{ site.baseurl }}/images/stats.png" class="tab-icon" alt="Stats">
                 <span>Stats</span>
