@@ -49,7 +49,6 @@
         .tab-green  { background-color: #6CBE45; }
         .tab-yellow { background-color: #FCCC0A; } 
 
-        /* Container grows to push footer to the bottom */
         .container {
             flex: 1;
             width: 100%;
@@ -59,14 +58,15 @@
             overflow-x: hidden;
         }
 
-        /* NEW SITE-WIDE FOOTER */
+        /* --- THE SLIM, HOVER-REVEAL FOOTER --- */
         .site-footer {
             background-color: #121212;
             color: #fff;
             text-align: center;
-            padding: 40px 20px;
-            margin-top: auto; /* Pushes to the bottom of the flex layout */
-            border-top: 6px solid #FF6319;
+            padding: 15px 20px; /* Slimmer default padding */
+            margin-top: auto;
+            border-top: 4px solid #FF6319; /* Thinner accent line */
+            transition: padding 0.4s ease;
         }
 
         .footer-content {
@@ -75,33 +75,65 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 20px;
         }
 
-        .footer-logo { font-size: 1.5rem; font-weight: 900; letter-spacing: -1px; text-transform: uppercase; margin: 0; }
-        .footer-desc { font-size: 0.85rem; color: #888; text-transform: uppercase; letter-spacing: 1px; margin: 0; }
+        /* Hidden by default, revealed on hover */
+        .footer-hidden-text {
+            max-height: 0;
+            opacity: 0;
+            overflow: hidden;
+            transition: all 0.4s cubic-bezier(0.25, 1, 0.5, 1);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 5px;
+        }
 
-        .footer-links { display: flex; gap: 20px; flex-wrap: wrap; justify-content: center; }
-        
-        .btn-footer {
-            background-color: transparent; border: 2px solid #fff; color: #fff;
-            padding: 10px 20px; font-weight: bold; text-transform: uppercase;
-            letter-spacing: 1px; text-decoration: none; font-size: 0.8rem;
-            transition: all 0.2s;
+        /* The Hover Trigger */
+        .site-footer:hover .footer-hidden-text {
+            max-height: 80px; 
+            opacity: 1;
+            margin-bottom: 15px; /* Pushes the links down smoothly */
+        }
+
+        /* Responsive scaling text for the footer */
+        .footer-logo { font-size: clamp(1.2rem, 3vw, 1.5rem); font-weight: 900; letter-spacing: -1px; text-transform: uppercase; margin: 0; }
+        .footer-desc { font-size: clamp(0.65rem, 2vw, 0.8rem); color: #888; text-transform: uppercase; letter-spacing: 1px; margin: 0; }
+
+        /* The always-visible minimalist links */
+        .footer-links { 
+            display: flex; 
+            gap: 15px; 
+            justify-content: center; 
+            align-items: center;
         }
         
-        .btn-footer:hover { background-color: #fff; color: #121212; }
+        .link-footer {
+            color: #aaa;
+            font-weight: bold; 
+            text-transform: uppercase;
+            letter-spacing: 1px; 
+            text-decoration: none; 
+            font-size: 0.75rem;
+            transition: color 0.2s;
+        }
         
-        .btn-tip { border-color: #FCCC0A; color: #FCCC0A; }
-        .btn-tip:hover { background-color: #FCCC0A; color: #121212; }
+        .link-footer:hover { color: #fff; }
+        
+        .link-tip { color: #FCCC0A; }
+        .link-tip:hover { color: #fff; }
+
+        .footer-divider { color: #444; font-size: 0.8rem; }
 
         @media (max-width: 600px) {
             .header-text { padding: 12px 10px 10px 10px; }
             .mta-tabs { height: 32px; } 
             .tab-icon { width: 16px; height: 16px; } 
             .mta-tab { font-size: 0.7rem; } 
-            .footer-links { flex-direction: column; width: 100%; }
-            .btn-footer { width: 100%; box-sizing: border-box; }
+            
+            /* On mobile, we stack the links since screens are narrow */
+            .footer-links { flex-direction: column; gap: 10px; }
+            .footer-divider { display: none; }
         }
     </style>
 </head>
@@ -139,16 +171,18 @@
 
     <footer class="site-footer">
         <div class="footer-content">
-            <div>
+            
+            <div class="footer-hidden-text">
                 <h3 class="footer-logo">The Transcontinental</h3>
                 <p class="footer-desc">Riding East. Summer 2026.</p>
             </div>
             
             <div class="footer-links">
-                <a href="mailto:mschiller87@gmail.com" class="btn-footer">Email The Rider</a>
-                
-                <a href="https://buymeacoffee.com/mschiller87?new=1" target="_blank" class="btn-footer btn-tip">☕️ Buy the Rider a Coffee</a>
+                <a href="mailto:your.email@example.com" class="link-footer">Email The Rider</a>
+                <span class="footer-divider">&bull;</span>
+                <a href="https://buymeacoffee.com/YOUR_LINK" target="_blank" class="link-footer link-tip">☕️ Buy the Rider a Coffee</a>
             </div>
+
         </div>
     </footer>
 
