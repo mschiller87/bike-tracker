@@ -2,10 +2,10 @@ name: Update Strava Data
 
 on:
   schedule:
-    # This tells the robot to run automatically every day at 8:00 AM UTC (Midnight PST / 3:00 AM EST)
+    # Runs automatically every day at 8:00 AM UTC
     - cron: '0 8 * * *'
-  # This line adds a "Run workflow" button so you can trigger it manually whenever you want!
-  workflow_dispatch: 
+  # Adds a "Run workflow" button for manual triggers
+  workflow_dispatch:
 
 jobs:
   update-map:
@@ -32,7 +32,7 @@ jobs:
           STRAVA_REFRESH_TOKEN: ${{ secrets.STRAVA_REFRESH_TOKEN }}
         run: python update_strava.py
 
-     - name: Commit and push changes
+      - name: Commit and push changes
         run: |
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
