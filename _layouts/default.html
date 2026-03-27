@@ -60,12 +60,13 @@
             text-transform: uppercase; 
             margin: 0 15px; 
             padding-bottom: 5px; 
-            border-bottom: 3px solid transparent; /* Default to invisible border */
+            border-bottom: 3px solid transparent; 
             transition: border-color 0.2s ease;
         }
         nav a:hover {
             color: #FF6319;
         }
+        
         /* The active class makes the orange line appear! */
         nav a.active {
             border-bottom: 3px solid #FF6319;
@@ -89,8 +90,8 @@
         <p>Pacific to Atlantic &nbsp;&bull;&nbsp; Summer 2026</p>
         
         <nav>
-            <a href="{{ site.baseurl }}/" class="{% if page.url == '/' or page.url == '/index.html' %}active{% endif %}">Journal</a>
-            <a href="{{ site.baseurl }}/tracker.html" class="{% if page.url == '/tracker.html' %}active{% endif %}">Live Map</a>
+            <a href="{{ site.baseurl }}/" class="{% unless page.url contains 'tracker' %}active{% endunless %}">Journal</a>
+            <a href="{{ site.baseurl }}/tracker.html" class="{% if page.url contains 'tracker' %}active{% endif %}">Live Map</a>
         </nav>
     </header>
 
