@@ -3,34 +3,6 @@ layout: default
 title: Stats
 ---
 
-{% assign safe_total_miles = 0 %}
-{% if site.posts.size > 0 %}
-    {% assign safe_total_miles = site.posts.first.total_miles | default: 0 %}
-{% endif %}
-
-{% assign safe_moving_hours = 0 %}
-{% assign safe_elevation_ft = 0 %}
-{% assign safe_longest_day = 0 %}
-{% assign safe_donuts = 0 %}
-
-{% if site.data.automated_stats %}
-    {% assign safe_moving_hours = site.data.automated_stats.total_moving_hours | default: 0 %}
-    {% assign safe_elevation_ft = site.data.automated_stats.total_elevation_ft | default: 0 %}
-    {% assign safe_longest_day = site.data.automated_stats.longest_day_miles | default: 0 %}
-    {% assign raw_cals = site.data.automated_stats.total_calories | default: 0 %}
-    {% assign safe_donuts = raw_cals | divided_by: 250 %}
-{% endif %}
-
-{% assign safe_tent = 0 %}
-{% assign safe_bed = 0 %}
-{% assign safe_hot_dogs = 0 %}
-
-{% if site.data.fun_stats %}
-    {% assign safe_tent = site.data.fun_stats.nights_tent | default: 0 %}
-    {% assign safe_bed = site.data.fun_stats.nights_bed | default: 0 %}
-    {% assign safe_hot_dogs = site.data.fun_stats.hot_dogs | default: 0 %}
-{% endif %}
-
 <style>
     .stats-container {
         max-width: 800px;
@@ -43,8 +15,10 @@ title: Stats
         display: grid;
         grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
         gap: 30px;
+        margin-top: 20px;
     }
 
+    /* Cards are now 100% visible immediately. No invisibility traps! */
     .stat-card {
         background: #fff;
         border: 1px solid #e0e0e0;
@@ -52,13 +26,6 @@ title: Stats
         padding: 30px;
         text-align: center;
         box-shadow: 0 4px 15px rgba(0,0,0,0.05);
-        /* SAFTEY FIX: We removed opacity: 0 so the cards are ALWAYS visible! */
-        transform: translateY(20px);
-        transition: transform 0.8s cubic-bezier(0.25, 1, 0.5, 1);
-    }
-
-    .stat-card.in-view {
-        transform: translateY(0);
     }
 
     .stat-title {
@@ -87,47 +54,170 @@ title: Stats
         margin-bottom: 15px;
     }
 
-    /* --- CUSTOM ANIMATIONS --- */
+    /* --- SAFE CSS ANIMATIONS --- */
     .spin-gear { font-size: 2.5rem; display: inline-block; }
-    .stat-card.in-view .spin-gear { animation: spin 3s ease-out forwards; animation-delay: 0.5s; }
+    .spin-gear.active { animation: spin 2s ease-out forwards; }
     @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
     .pop-up-emoji { font-size: 2.5rem; display: inline-block; opacity: 0; transform: scale(0); }
-    .stat-card.in-view .pop-up-emoji { animation: popUp 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; animation-delay: 0.5s; }
-    @keyframes popUp { to { opacity: 1; transform: scale(1); } }
+    .pop-up-emoji.active { animation: popUp 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
+    @keyframes popUp { 0% { opacity: 0; transform: scale(0); } 100% { opacity: 1; transform: scale(1); } }
 
     .fire-emoji { font-size: 2.5rem; display: inline-block; transform-origin: bottom; }
-    .stat-card.in-view .fire-emoji { animation: flicker 2s infinite alternate; }
+    .fire-emoji.active { animation: flicker 2s infinite alternate; }
     @keyframes flicker { 0% { transform: scale(1) rotate(-5deg); } 100% { transform: scale(1.1) rotate(5deg); } }
 
     .mountain-graphic { width: 100px; height: 50px; margin: 0 auto; }
     .mountain-path { fill: none; stroke: #6CBE45; stroke-width: 4; stroke-linecap: round; stroke-linejoin: round; stroke-dasharray: 200; stroke-dashoffset: 200; }
-    .stat-card.in-view .mountain-path { animation: climbMountain 3s ease-out forwards; animation-delay: 0.5s; }
+    .mountain-path.active { animation: climbMountain 2.5s ease-out forwards; }
     @keyframes climbMountain { to { stroke-dashoffset: 0; } }
 
     .hotdog-container { font-size: 2rem; display: flex; justify-content: center; flex-wrap: wrap; gap: 5px; min-height: 40px; }
     .hotdog-emoji { opacity: 0; transform: translateY(-20px); }
-    .stat-card.in-view .hotdog-emoji { animation: dropIn 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
+    .hotdog-emoji.active { animation: dropIn 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
     @keyframes dropIn { to { opacity: 1; transform: translateY(0); } }
 </style>
 
 <div class="stats-container">
+    
+    <h2 style="text-align: center; text-transform: uppercase; letter-spacing: 1px; color: #121212; border-bottom: 4px solid #FCCC0A; display: inline-block; padding-bottom: 5px; margin-bottom: 10px;">The Numbers</h2>
+
     <div class="stat-grid">
         
         <div class="stat-card" style="border-top-color: #0039A6;">
             <div class="stat-title">Total Miles Biked</div>
-            <div class="stat-number" data-target="{{ safe_total_miles }}">0</div>
+            <div class="stat-number" data-target="{{ site.posts.first.total_miles | default: 0 }}">0</div>
             <div style="font-size: 2.5rem;">🚲</div>
         </div>
 
         <div class="stat-card" style="border-top-color: #EE352E;">
             <div class="stat-title">Time Spent Pedaling</div>
-            <div class="stat-number" data-target="{{ safe_moving_hours }}">0</div>
+            <div class="stat-number" data-target="{{ site.data.automated_stats.total_moving_hours | default: 0 }}">0</div>
             <div class="stat-subtext">Hours</div>
             <div class="spin-gear">⚙️</div>
         </div>
 
         <div class="stat-card" style="border-top-color: #6CBE45;">
             <div class="stat-title">Elevation Climbed</div>
-            <div class="stat-number" data-target="{{ safe_elevation_ft }}">0</div>
-            <div
+            <div class="stat-number" data-target="{{ site.data.automated_stats.total_elevation_ft | default: 0 }}">0</div>
+            <div class="stat-subtext">Feet</div>
+            <svg class="mountain-graphic" viewBox="0 0 100 50">
+                <path class="mountain-path" d="M5,45 L30,15 L50,35 L80,5 L95,45" />
+            </svg>
+        </div>
+
+        <div class="stat-card" style="border-top-color: #FF6319;">
+            <div class="stat-title">Longest Single Day</div>
+            <div class="stat-number" data-target="{{ site.data.automated_stats.longest_day_miles | default: 0 }}">0</div>
+            <div class="stat-subtext">Miles</div>
+            <div class="fire-emoji">🔥</div>
+        </div>
+
+        <div class="stat-card" style="border-top-color: #FCCC0A;">
+            <div class="stat-title">Donuts Burned</div>
+            <div class="stat-number donut-stat" data-cals="{{ site.data.automated_stats.total_calories | default: 0 }}">0</div>
+            <div class="pop-up-emoji donut-emoji">🍩</div>
+        </div>
+
+        <div class="stat-card" style="border-top-color: #0039A6;">
+            <div class="stat-title">Nights in a Tent</div>
+            <div class="stat-number" data-target="{{ site.data.fun_stats.nights_tent | default: 0 }}">0</div>
+            <div class="pop-up-emoji">⛺️</div>
+        </div>
+
+        <div class="stat-card" style="border-top-color: #6CBE45;">
+            <div class="stat-title">Nights in a Bed</div>
+            <div class="stat-number" data-target="{{ site.data.fun_stats.nights_bed | default: 0 }}">0</div>
+            <div class="pop-up-emoji">🛏️</div>
+        </div>
+
+        <div class="stat-card" style="border-top-color: #EE352E;">
+            <div class="stat-title">Hot Dogs Consumed</div>
+            <div class="stat-number" data-target="{{ site.data.fun_stats.hot_dogs | default: 0 }}">0</div>
+            <div class="hotdog-container" id="hotdog-box" data-count="{{ site.data.fun_stats.hot_dogs | default: 0 }}"></div>
+        </div>
+
+    </div>
+</div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        
+        // 1. Calculate Donuts safely using JavaScript!
+        const donutStat = document.querySelector('.donut-stat');
+        if(donutStat) {
+            const cals = parseInt(donutStat.getAttribute('data-cals'), 10) || 0;
+            const donuts = Math.floor(cals / 250);
+            donutStat.setAttribute('data-target', donuts);
+        }
+
+        // 2. Generate Hot Dogs safely
+        const hotDogBox = document.getElementById('hotdog-box');
+        const hdCount = parseInt(hotDogBox.getAttribute('data-count'), 10) || 0;
+        const displayLimit = Math.min(hdCount, 15); // Cap at 15 so it doesn't break the card
+        
+        for(let i=0; i < displayLimit; i++) {
+            let hd = document.createElement('span');
+            hd.className = 'hotdog-emoji';
+            hd.innerText = '🌭';
+            hd.style.animationDelay = (0.2 + (i * 0.2)) + 's';
+            hotDogBox.appendChild(hd);
+        }
+
+        // 3. Simple Observer to trigger numbers and animations on scroll
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach((entry) => {
+                if (entry.isIntersecting) {
+                    
+                    // Trigger Number Count Up
+                    const numberElement = entry.target.querySelector('.stat-number');
+                    if (numberElement && !numberElement.classList.contains('counted')) {
+                        numberElement.classList.add('counted');
+                        const target = parseInt(numberElement.getAttribute('data-target'), 10) || 0;
+                        
+                        const duration = 2000; 
+                        const stepTime = 30;
+                        const totalSteps = Math.max(1, duration / stepTime);
+                        let current = 0;
+                        
+                        if (target > 0) {
+                            const timer = setInterval(() => {
+                                current += Math.ceil(target / totalSteps); 
+                                if (current >= target) {
+                                    numberElement.innerText = target.toLocaleString();
+                                    clearInterval(timer);
+                                } else {
+                                    numberElement.innerText = current.toLocaleString();
+                                }
+                            }, stepTime);
+                        } else {
+                            numberElement.innerText = "0";
+                        }
+                    }
+
+                    // Trigger the icons to animate safely by adding '.active'
+                    const gear = entry.target.querySelector('.spin-gear');
+                    if (gear) gear.classList.add('active');
+
+                    const path = entry.target.querySelector('.mountain-path');
+                    if (path) path.classList.add('active');
+
+                    const fire = entry.target.querySelector('.fire-emoji');
+                    if (fire) fire.classList.add('active');
+
+                    const popUps = entry.target.querySelectorAll('.pop-up-emoji');
+                    popUps.forEach(p => p.classList.add('active'));
+
+                    const hotdogs = entry.target.querySelectorAll('.hotdog-emoji');
+                    hotdogs.forEach(h => h.classList.add('active'));
+                    
+                    observer.unobserve(entry.target);
+                }
+            });
+        }, { threshold: 0.1 });
+
+        document.querySelectorAll('.stat-card').forEach(card => {
+            observer.observe(card);
+        });
+    });
+</script>
