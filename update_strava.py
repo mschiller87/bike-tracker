@@ -162,7 +162,6 @@ print("SUCCESS: Blog synced, stats calculated, and data saved!")
 # ==========================================
 def update_fun_stats():
     import os
-    import yaml
     
     posts_dir = '_posts'
     total_hot_dogs = 0
@@ -188,15 +187,13 @@ def update_fun_stats():
                     for emoji in bed_emojis:
                         total_beds += content.count(emoji)
                         
-    fun_stats = {
-        'hot_dogs': total_hot_dogs,
-        'nights_tent': total_tents,
-        'nights_bed': total_beds
-    }
-    
     os.makedirs('_data', exist_ok=True)
+    
+    # Write the stats directly without needing the yaml plugin!
     with open('_data/fun_stats.yml', 'w', encoding='utf-8') as f:
-        yaml.dump(fun_stats, f, default_flow_style=False, sort_keys=False)
+        f.write(f"hot_dogs: {total_hot_dogs}\n")
+        f.write(f"nights_tent: {total_tents}\n")
+        f.write(f"nights_bed: {total_beds}\n")
     
     print(f"✅ Fun Stats Updated: {total_hot_dogs} Hot Dogs, {total_tents} Tents, {total_beds} Beds")
 
