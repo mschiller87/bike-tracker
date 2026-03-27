@@ -63,9 +63,9 @@
             background-color: #121212;
             color: #fff;
             text-align: center;
-            padding: 15px 20px; /* Slimmer default padding */
+            padding: 15px 20px; 
             margin-top: auto;
-            border-top: 4px solid #FF6319; /* Thinner accent line */
+            border-top: 4px solid #FF6319; 
             transition: padding 0.4s ease;
         }
 
@@ -89,21 +89,18 @@
             gap: 5px;
         }
 
-        /* The Hover Trigger */
         .site-footer:hover .footer-hidden-text {
             max-height: 80px; 
             opacity: 1;
-            margin-bottom: 15px; /* Pushes the links down smoothly */
+            margin-bottom: 15px; 
         }
 
-        /* Responsive scaling text for the footer */
-        .footer-logo { font-size: clamp(1.2rem, 3vw, 1.5rem); font-weight: 900; letter-spacing: -1px; text-transform: uppercase; margin: 0; }
-        .footer-desc { font-size: clamp(0.65rem, 2vw, 0.8rem); color: #888; text-transform: uppercase; letter-spacing: 1px; margin: 0; }
+        /* Responsive scaling text for the footer using clamp() */
+        .footer-logo { font-size: clamp(1rem, 4vw, 1.5rem); font-weight: 900; letter-spacing: -1px; text-transform: uppercase; margin: 0; }
+        .footer-desc { font-size: clamp(0.6rem, 2.5vw, 0.8rem); color: #888; text-transform: uppercase; letter-spacing: 1px; margin: 0; }
 
-        /* The always-visible minimalist links */
         .footer-links { 
             display: flex; 
-            gap: 15px; 
             justify-content: center; 
             align-items: center;
         }
@@ -114,16 +111,13 @@
             text-transform: uppercase;
             letter-spacing: 1px; 
             text-decoration: none; 
-            font-size: 0.75rem;
+            /* Auto-shrinks the link text on mobile */
+            font-size: clamp(0.65rem, 3vw, 0.75rem); 
             transition: color 0.2s;
         }
         
-        .link-footer:hover { color: #fff; }
-        
         .link-tip { color: #FCCC0A; }
         .link-tip:hover { color: #fff; }
-
-        .footer-divider { color: #444; font-size: 0.8rem; }
 
         @media (max-width: 600px) {
             .header-text { padding: 12px 10px 10px 10px; }
@@ -131,9 +125,9 @@
             .tab-icon { width: 16px; height: 16px; } 
             .mta-tab { font-size: 0.7rem; } 
             
-            /* On mobile, we stack the links since screens are narrow */
-            .footer-links { flex-direction: column; gap: 10px; }
-            .footer-divider { display: none; }
+            /* Shrink footer padding on mobile */
+            .site-footer { padding: 10px 15px; }
+            .site-footer:hover .footer-hidden-text { margin-bottom: 10px; }
         }
     </style>
 </head>
@@ -178,9 +172,7 @@
             </div>
             
             <div class="footer-links">
-                <a href="mailto:your.email@example.com" class="link-footer">Email The Rider</a>
-                <span class="footer-divider">&bull;</span>
-                <a href="https://buymeacoffee.com/YOUR_LINK" target="_blank" class="link-footer link-tip">☕️ Buy the Rider a Coffee</a>
+                <a href="https://buymeacoffee.com/mschiller87?new=1" target="_blank" class="link-footer link-tip">☕️ Buy the Rider a Coffee</a>
             </div>
 
         </div>
