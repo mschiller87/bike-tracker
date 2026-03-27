@@ -8,6 +8,12 @@
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     
     <style>
+        /* ADDED OVERFLOW-X FIX HERE */
+        html, body {
+            overflow-x: hidden;
+            width: 100%;
+        }
+
         /* NYC Subway Tile Background */
         body { 
             margin: 0; 
@@ -21,7 +27,6 @@
             color: #121212;
         }
 
-        /* Bold MTA-Style Sticky Header */
         header {
             position: sticky; 
             top: 0; 
@@ -33,17 +38,16 @@
         
         .header-text {
             padding: 25px 20px 20px 20px;
-            transition: padding 0.3s ease; /* Smooth transition when resizing */
+            transition: padding 0.3s ease; 
         }
 
-        /* FLUID TYPOGRAPHY: Scales perfectly on any screen! */
         header h1 { 
             font-size: clamp(1.5rem, 5vw, 3rem); 
             font-weight: bold; 
             text-transform: uppercase; 
             letter-spacing: -1.5px; 
             margin: 0; 
-            white-space: nowrap; /* Forces it to stay on one line */
+            white-space: nowrap; 
         }
         header p {
             font-size: clamp(0.65rem, 2vw, 0.9rem);
@@ -55,9 +59,6 @@
             white-space: nowrap;
         }
 
-        /* --------------------------------------
-           THE ANIMATED 5-COLOR ACCORDION TABS 
-           -------------------------------------- */
         .mta-tabs {
             display: flex;
             width: 100%;
@@ -120,15 +121,16 @@
             padding: 0;
             box-shadow: 0 0 20px rgba(0,0,0,0.05);
             min-height: 100vh;
+            /* ADDED OVERFLOW-X FIX HERE */
+            overflow-x: hidden;
         }
 
-        /* --- MOBILE SHRINKING MAGIC --- */
         @media (max-width: 600px) {
-            .header-text { padding: 12px 10px 10px 10px; } /* Slims down the black header height */
+            .header-text { padding: 12px 10px 10px 10px; }
             header p { margin-top: 5px; letter-spacing: 1px; }
-            .mta-tabs { height: 32px; } /* Slims down the colored tab bar */
-            .tab-icon { width: 16px; height: 16px; } /* Shrinks the icons */
-            .mta-tab { font-size: 0.7rem; } /* Shrinks the tab text */
+            .mta-tabs { height: 32px; } 
+            .tab-icon { width: 16px; height: 16px; } 
+            .mta-tab { font-size: 0.7rem; } 
             .mta-tab:hover span, .mta-tab.active span { max-width: 100px; margin-left: 5px; }
         }
     </style>
