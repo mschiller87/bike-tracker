@@ -10,7 +10,7 @@ CLIENT_SECRET = os.environ['STRAVA_CLIENT_SECRET']
 REFRESH_TOKEN = os.environ['STRAVA_REFRESH_TOKEN']
 
 # The robot will ignore any rides before this date
-TRIP_START_DATE = "2026-06-01"
+TRIP_START_DATE = "2026-03-01"
 BASE_URL = "https://mschiller87.github.io/bike-tracker"
 
 print("Authenticating with Strava...")
