@@ -47,4 +47,134 @@
         .mta-tab:hover, .mta-tab.active { flex: 3; }
         .mta-tab:hover span, .mta-tab.active span { opacity: 1; max-width: 150px; margin-left: 8px; }
 
-        .tab-blue
+        .tab-blue   { background-color: #0039A6; }
+        .tab-orange { background-color: #FF6319; }
+        .tab-green  { background-color: #6CBE45; }
+        .tab-yellow { background-color: #FCCC0A; } 
+
+        .container {
+            /* FIX 2: flex '1 0 auto' ensures the container pushes the footer all the way down without clipping */
+            flex: 1 0 auto;
+            width: 100%;
+            max-width: 800px; margin: 0 auto;
+            background-color: white; padding: 0;
+            box-shadow: 0 0 20px rgba(0,0,0,0.05);
+            /* Removed overflow-x hidden here so it doesn't create a secondary scroll area */
+        }
+
+        /* --- THE SLIM, HOVER-REVEAL FOOTER --- */
+        .site-footer {
+            background-color: #121212;
+            color: #fff;
+            text-align: center;
+            padding: 15px 20px; 
+            margin-top: auto;
+            border-top: 4px solid #FF6319; 
+            transition: padding 0.4s ease;
+        }
+
+        .footer-content {
+            max-width: 800px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .footer-hidden-text {
+            max-height: 0;
+            opacity: 0;
+            overflow: hidden;
+            transition: all 0.4s cubic-bezier(0.25, 1, 0.5, 1);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .site-footer:hover .footer-hidden-text {
+            max-height: 80px; 
+            opacity: 1;
+            margin-bottom: 15px; 
+        }
+
+        .footer-logo { font-size: clamp(1rem, 4vw, 1.5rem); font-weight: 900; letter-spacing: -1px; text-transform: uppercase; margin: 0; }
+        .footer-desc { font-size: clamp(0.6rem, 2.5vw, 0.8rem); color: #888; text-transform: uppercase; letter-spacing: 1px; margin: 0; }
+
+        .footer-links { 
+            display: flex; 
+            justify-content: center; 
+            align-items: center;
+        }
+        
+        .link-footer {
+            color: #aaa;
+            font-weight: bold; 
+            text-transform: uppercase;
+            letter-spacing: 1px; 
+            text-decoration: none; 
+            font-size: clamp(0.65rem, 3vw, 0.75rem); 
+            transition: color 0.2s;
+        }
+        
+        .link-tip { color: #FCCC0A; }
+        .link-tip:hover { color: #fff; }
+
+        @media (max-width: 600px) {
+            .header-text { padding: 12px 10px 10px 10px; }
+            .mta-tabs { height: 32px; } 
+            .tab-icon { width: 16px; height: 16px; } 
+            .mta-tab { font-size: 0.7rem; } 
+            
+            .site-footer { padding: 10px 15px; }
+            .site-footer:hover .footer-hidden-text { margin-bottom: 10px; }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="header-text">
+            <h1>The Transcontinental</h1>
+            <p>Pacific to Atlantic &nbsp;&bull;&nbsp; Summer 2026</p>
+        </div>
+        
+        <nav class="mta-tabs">
+            <a href="{{ site.baseurl }}/" class="mta-tab tab-blue {% if page.url == '/' or page.url == '/index.html' %}active{% endif %}">
+                <img src="{{ site.baseurl }}/images/journal.png" class="tab-icon" alt="Journal">
+                <span>Journal</span>
+            </a>
+            <a href="{{ site.baseurl }}/tracker.html" class="mta-tab tab-orange {% if page.url contains 'tracker' %}active{% endif %}">
+                <img src="{{ site.baseurl }}/images/live-map.png" class="tab-icon" alt="Live Map">
+                <span>Live Map</span>
+            </a>
+            <a href="{{ site.baseurl }}/photos.html" class="mta-tab tab-green {% if page.url contains 'photos' %}active{% endif %}">
+                <img src="{{ site.baseurl }}/images/photos.png" class="tab-icon" alt="Photos">
+                <span>Photos</span>
+            </a>
+            <a href="{{ site.baseurl }}/stats.html" class="mta-tab tab-yellow {% if page.url contains 'stats' %}active{% endif %}">
+                <img src="{{ site.baseurl }}/images/stats.png" class="tab-icon" alt="Stats">
+                <span>Stats</span>
+            </a>
+        </nav>
+    </header>
+
+    <div class="container">
+        {{ content }}
+    </div>
+
+    <footer class="site-footer">
+        <div class="footer-content">
+            <div class="footer-hidden-text">
+                <h3 class="footer-logo">The Transcontinental</h3>
+                <p class="footer-desc">Riding East. Summer 2026.</p>
+            </div>
+            
+            <div class="footer-links">
+                <a href="https://buymeacoffee.com/YOUR_LINK" target="_blank" class="link-footer link-tip">☕️ Buy the Rider a Coffee</a>
+            </div>
+        </div>
+    </footer>
+
+</body>
+</html>
