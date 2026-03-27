@@ -5,6 +5,22 @@ import polyline
 import time
 import shutil 
 
+import requests
+
+def get_ride_weather(lat, lon, date_str):
+    # date_str must be formatted as "YYYY-MM-DD"
+    url = f"https://api.open-meteo.com/v1/forecast?latitude={lat}&longitude={lon}&start_date={date_str}&end_date={date_str}&daily=temperature_2m_max,temperature_2m_min&temperature_unit=fahrenheit&timezone=auto"
+    
+    try:
+        response = requests.get(url)
+        data = response.json()
+        max_temp = round(data['daily']['temperature_2m_max'][0])
+        min_temp = round(data['daily']['temperature_2m_min'][0])
+        return max_temp, min_temp
+    except Exception as e:
+        print(f"Weather fetch failed for {date_str}: {e}")
+        return None, None
+
 # --- 1. SETTINGS & AUTHENTICATION ---
 CLIENT_ID = os.environ['STRAVA_CLIENT_ID']
 CLIENT_SECRET = os.environ['STRAVA_CLIENT_SECRET']
