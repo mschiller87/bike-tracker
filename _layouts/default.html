@@ -8,10 +8,10 @@
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     
     <style>
-        html, body { overflow-x: hidden; width: 100%; }
+        html, body { overflow-x: hidden; width: 100%; height: 100%; margin: 0; padding: 0; }
 
         body { 
-            margin: 0; padding: 0; 
+            display: flex; flex-direction: column; min-height: 100vh;
             font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; 
             background-color: #f8f9fa;
             background-image:
@@ -41,8 +41,6 @@
         .tab-yellow .tab-icon { filter: none; }
 
         .mta-tab span { opacity: 0; max-width: 0; white-space: nowrap; transition: all 0.4s ease; display: inline-block; }
-
-        /* With 4 tabs, we make the active one expand slightly more (flex: 3) */
         .mta-tab:hover, .mta-tab.active { flex: 3; }
         .mta-tab:hover span, .mta-tab.active span { opacity: 1; max-width: 150px; margin-left: 8px; }
 
@@ -51,19 +49,59 @@
         .tab-green  { background-color: #6CBE45; }
         .tab-yellow { background-color: #FCCC0A; } 
 
+        /* Container grows to push footer to the bottom */
         .container {
+            flex: 1;
+            width: 100%;
             max-width: 800px; margin: 0 auto;
             background-color: white; padding: 0;
             box-shadow: 0 0 20px rgba(0,0,0,0.05);
-            min-height: 100vh;
             overflow-x: hidden;
         }
+
+        /* NEW SITE-WIDE FOOTER */
+        .site-footer {
+            background-color: #121212;
+            color: #fff;
+            text-align: center;
+            padding: 40px 20px;
+            margin-top: auto; /* Pushes to the bottom of the flex layout */
+            border-top: 6px solid #FF6319;
+        }
+
+        .footer-content {
+            max-width: 800px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .footer-logo { font-size: 1.5rem; font-weight: 900; letter-spacing: -1px; text-transform: uppercase; margin: 0; }
+        .footer-desc { font-size: 0.85rem; color: #888; text-transform: uppercase; letter-spacing: 1px; margin: 0; }
+
+        .footer-links { display: flex; gap: 20px; flex-wrap: wrap; justify-content: center; }
+        
+        .btn-footer {
+            background-color: transparent; border: 2px solid #fff; color: #fff;
+            padding: 10px 20px; font-weight: bold; text-transform: uppercase;
+            letter-spacing: 1px; text-decoration: none; font-size: 0.8rem;
+            transition: all 0.2s;
+        }
+        
+        .btn-footer:hover { background-color: #fff; color: #121212; }
+        
+        .btn-tip { border-color: #FCCC0A; color: #FCCC0A; }
+        .btn-tip:hover { background-color: #FCCC0A; color: #121212; }
 
         @media (max-width: 600px) {
             .header-text { padding: 12px 10px 10px 10px; }
             .mta-tabs { height: 32px; } 
             .tab-icon { width: 16px; height: 16px; } 
             .mta-tab { font-size: 0.7rem; } 
+            .footer-links { flex-direction: column; width: 100%; }
+            .btn-footer { width: 100%; box-sizing: border-box; }
         }
     </style>
 </head>
@@ -98,6 +136,21 @@
     <div class="container">
         {{ content }}
     </div>
+
+    <footer class="site-footer">
+        <div class="footer-content">
+            <div>
+                <h3 class="footer-logo">The Transcontinental</h3>
+                <p class="footer-desc">Riding East. Summer 2026.</p>
+            </div>
+            
+            <div class="footer-links">
+                <a href="mailto:your.email@example.com" class="btn-footer">Email The Rider</a>
+                
+                <a href="https://buymeacoffee.com/YOUR_LINK" target="_blank" class="btn-footer btn-tip">☕️ Buy the Rider a Coffee</a>
+            </div>
+        </div>
+    </footer>
 
 </body>
 </html>
