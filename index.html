@@ -3,7 +3,7 @@ layout: default
 ---
 
 <style>
-    /* Sleek Abstract Strip Map CSS (Untouched) */
+    /* Sleek Abstract Strip Map CSS */
     .strip-map-container {
         max-width: 800px; margin: 0 auto; padding: 180px 20px 80px 20px; 
         font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
@@ -17,7 +17,7 @@ layout: default
     .sub-label { display: block; font-size: 0.8rem; color: #888; font-weight: normal; margin-top: 2px; text-transform: uppercase; letter-spacing: 1px; }
     .mileage-stats { position: absolute; top: 25px; font-size: 0.85rem; font-weight: bold; color: #555; text-align: center; width: 100%; text-transform: uppercase; }
 
-    /* The New Editorial Journal CSS */
+    /* The Refined Journal Feed */
     .journal-feed { 
         max-width: 800px; margin: 0 auto; padding: 0 40px 60px 40px; 
     }
@@ -25,65 +25,94 @@ layout: default
     .post-card { 
         display: flex; 
         flex-direction: row; 
-        /* 'stretch' forces the image to be the exact same height as the text box */
-        align-items: stretch; 
         background: #fff; 
         margin-bottom: 40px;
-        box-shadow: 0 4px 20px rgba(0,0,0,0.06); /* Soft shadow since borders are gone */
-        overflow: hidden; /* Keeps the image neatly inside the corners */
-        transition: all 0.3s ease;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.06); 
+        overflow: hidden; 
     }
     
+    /* Hard-coded Square Thumbnail */
     .post-thumbnail { 
-        width: 220px; /* Slightly wider to look better flush */
+        width: 250px; 
+        height: 250px; 
         flex-shrink: 0; 
         background-color: #f4f4f4; 
-        transition: all 0.3s ease;
     }
-    
-    /* Display block and object-fit cover ensure the image perfectly fills the container */
     .post-thumbnail img { width: 100%; height: 100%; object-fit: cover; display: block; }
     
-    /* The text box gets its own padding now since the card itself has none */
+    /* Flexbox wizardry to pin the button to the bottom right */
     .post-content { 
         flex: 1; 
         min-width: 0; 
-        padding: 30px; 
+        padding: 25px 30px; 
         display: flex; 
         flex-direction: column; 
+        min-height: 250px; /* Matches the thumbnail height to ensure perfect pinning */
+        box-sizing: border-box;
     }
 
     .post-meta { font-weight: bold; color: #888; text-transform: uppercase; font-size: 0.75rem; letter-spacing: 1px; margin-bottom: 8px; }
     .post-content h2 { font-size: 1.5rem; margin: 0 0 10px 0; letter-spacing: -0.5px; color: #121212; }
     .post-preview p { font-size: 1rem; line-height: 1.6; color: #555; margin: 0; }
     
-    .post-full { display: none; font-size: 1rem; line-height: 1.6; color: #333; margin-top: 15px; }
-    .post-full img { max-width: 100%; height: auto; border-radius: 4px; margin: 20px 0; }
-    .post-full h3 { margin-top: 25px; margin-bottom: 10px; font-size: 1.2rem; text-transform: uppercase; letter-spacing: 1px; color: #121212; }
+    .post-full { display: none; font-size: 1rem; line-height: 1.6; color: #333; margin-top: 10px; }
+    
+    /* The Post-Expansion Image Grid */
+    .post-image-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+        gap: 15px;
+        margin-top: 30px;
+        border-top: 1px solid #eee;
+        padding-top: 25px;
+    }
+    .post-image-grid img {
+        width: 100%;
+        height: 180px;
+        object-fit: cover;
+        cursor: pointer;
+        border-radius: 2px;
+        transition: opacity 0.2s;
+    }
+    .post-image-grid img:hover { opacity: 0.8; }
 
     /* The Subdued, Bottom-Right Toggle Link */
     .expand-toggle {
         background: none; border: none; padding: 0; 
         font-size: 0.75rem; 
-        color: #999; /* Light grey */
+        color: #aaa; 
         text-transform: uppercase; 
         letter-spacing: 1px; 
         cursor: pointer; 
-        align-self: flex-end; /* Pushes it to the far right */
-        margin-top: 20px; /* Gives it breathing room from the text above */
+        align-self: flex-end; /* Pins it to the right */
+        margin-top: auto;     /* Pins it to the bottom */
         transition: color 0.2s;
     }
-    .expand-toggle:hover { color: #121212; } /* Darkens slightly when hovered */
+    .expand-toggle:hover { color: #121212; }
 
-    /* When expanded, stack everything vertically so images get full width */
+    /* Expanded Layout Adjustments */
     .post-card.expanded { flex-direction: column; }
-    .post-card.expanded .post-thumbnail { width: 100%; height: 350px; }
+
+    /* LIGHTBOX CSS */
+    .lightbox-overlay { 
+        display: none; position: fixed; z-index: 9999; left: 0; top: 0; 
+        width: 100%; height: 100%; background-color: rgba(18,18,18,0.95); 
+        justify-content: center; align-items: center; 
+    }
+    .lightbox-overlay.active { display: flex; }
+    #lightbox-img { max-width: 90%; max-height: 80vh; border: 2px solid #fff; box-shadow: 0 4px 20px rgba(0,0,0,0.5); }
+    .close-lightbox { position: absolute; top: 20px; right: 30px; color: white; font-size: 40px; font-weight: bold; cursor: pointer; }
+    .prev-lightbox, .next-lightbox { cursor: pointer; position: absolute; top: 50%; transform: translateY(-50%); padding: 20px; color: white; font-weight: bold; font-size: 30px; user-select: none; transition: background 0.2s; }
+    .prev-lightbox { left: 20px; }
+    .next-lightbox { right: 20px; }
+    .prev-lightbox:hover, .next-lightbox:hover { background-color: rgba(255,255,255,0.1); }
 
     @media (max-width: 600px) { 
         .journal-feed { padding: 0 20px 40px 20px; } 
         .post-card { flex-direction: column; } 
-        .post-thumbnail { width: 100%; height: 220px; } 
-        .post-content { padding: 20px; }
+        .post-thumbnail { width: 100%; height: 250px; } 
+        .post-content { padding: 20px; min-height: auto; }
+        .expand-toggle { margin-top: 20px; } /* Gives it space on mobile since min-height is gone */
         .station-node { width: 25%; }
         .angled-label { font-size: 0.8rem; width: 110px; bottom: 15px; }
         .sub-label { font-size: 0.7rem; }
@@ -129,17 +158,15 @@ layout: default
         {% endif %}
 
         <div class="post-content">
-            <div>
-                <div class="post-meta">{{ post.date | date: "%b %d" }} &nbsp;&bull;&nbsp; {{ post.location }}</div>
-                <h2>{{ post.title }}</h2>
-                
-                <div class="post-preview">
-                    <p>{{ post.content | strip_html | truncatewords: 35 }}</p>
-                </div>
+            <div class="post-meta">{{ post.date | date: "%b %d" }} &nbsp;&bull;&nbsp; {{ post.location }}</div>
+            <h2>{{ post.title }}</h2>
+            
+            <div class="post-preview">
+                <p>{{ post.content | strip_html | truncatewords: 35 }}</p>
+            </div>
 
-                <div class="post-full">
-                    {{ post.content | markdownify }}
-                </div>
+            <div class="post-full">
+                {{ post.content | markdownify }}
             </div>
 
             <button class="expand-toggle" onclick="togglePost(this)">Full Entry</button>
@@ -149,22 +176,105 @@ layout: default
     {% endfor %}
 </main>
 
+<div id="lightbox" class="lightbox-overlay">
+    <span class="close-lightbox" onclick="closeLightbox()">&times;</span>
+    <span class="prev-lightbox" onclick="changeLightbox(-1)">&#10094;</span>
+    <img id="lightbox-img" src="">
+    <span class="next-lightbox" onclick="changeLightbox(1)">&#10095;</span>
+</div>
+
 <script>
     function togglePost(btn) {
         const card = btn.closest('.post-card');
         const preview = card.querySelector('.post-preview');
         const full = card.querySelector('.post-full');
+        const thumbnail = card.querySelector('.post-thumbnail');
         
         if (full.style.display === 'none' || full.style.display === '') {
+            // Expand the card
             full.style.display = 'block';
             preview.style.display = 'none';
+            if (thumbnail) thumbnail.style.display = 'none'; // Hide the square thumbnail
             btn.innerHTML = 'Close Entry';
             card.classList.add('expanded'); 
+
+            // Automagically format the images into a gallery below the text!
+            if (!card.dataset.galleryProcessed) {
+                const galleryContainer = document.createElement('div');
+                galleryContainer.className = 'post-image-grid';
+                
+                // 1. Grab the primary image from the thumbnail
+                if (thumbnail) {
+                    const primaryImgSrc = thumbnail.querySelector('img').src;
+                    galleryContainer.innerHTML += `<img src="${primaryImgSrc}" class="lightbox-trigger">`;
+                }
+                
+                // 2. Grab any extra markdown images generated by Python
+                const extraImages = full.querySelectorAll('img');
+                extraImages.forEach(img => {
+                    const newImg = document.createElement('img');
+                    newImg.src = img.src;
+                    newImg.className = 'lightbox-trigger';
+                    galleryContainer.appendChild(newImg);
+                    img.remove(); // Removes the raw image from the text area
+                });
+                
+                // 3. Clean up the "Today's Gallery" text header
+                const headers = full.querySelectorAll('h3');
+                headers.forEach(h => { if(h.innerText.includes('Gallery')) h.remove(); });
+                
+                // 4. Append the organized gallery to the bottom of the text
+                full.appendChild(galleryContainer);
+                card.dataset.galleryProcessed = "true";
+                
+                // 5. Turn on the Lightbox click events for these photos
+                setupLightboxEvents(galleryContainer);
+            }
         } else {
+            // Collapse the card back to normal
             full.style.display = 'none';
             preview.style.display = 'block';
+            if (thumbnail) thumbnail.style.display = 'block';
             btn.innerHTML = 'Full Entry';
             card.classList.remove('expanded');
         }
+    }
+
+    /* LIGHTBOX LOGIC */
+    let currentGallery = [];
+    let currentIndex = 0;
+
+    function setupLightboxEvents(container) {
+        const triggers = container.querySelectorAll('.lightbox-trigger');
+        triggers.forEach((trigger, index) => {
+            trigger.onclick = function() {
+                // Creates an array of just the images in THIS specific post
+                currentGallery = Array.from(triggers).map(img => img.src);
+                currentIndex = index;
+                openLightbox();
+            };
+        });
+    }
+
+    function openLightbox() {
+        document.getElementById('lightbox').classList.add('active');
+        document.body.style.overflow = 'hidden'; // Prevents background scrolling
+        updateLightboxImage();
+    }
+
+    function closeLightbox() {
+        document.getElementById('lightbox').classList.remove('active');
+        document.body.style.overflow = 'auto';
+    }
+
+    function changeLightbox(dir) {
+        currentIndex += dir;
+        if (currentIndex >= currentGallery.length) currentIndex = 0;
+        if (currentIndex < 0) currentIndex = currentGallery.length - 1;
+        updateLightboxImage();
+    }
+
+    function updateLightboxImage() {
+        document.getElementById('lightbox-img').src = currentGallery[currentIndex];
     }
 </script>
