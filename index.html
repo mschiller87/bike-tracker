@@ -7,9 +7,12 @@ layout: default
     .strip-map-container {
         max-width: 800px;
         margin: 0 auto; 
-        /* MASSIVE top padding pulls the white background all the way up under the header */
         padding: 180px 20px 80px 20px; 
         font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+        /* THE MAGIC FIX: Chops off any text trying to bleed off the right edge */
+        overflow: hidden; 
+        /* Ensures padding doesn't add to the total width */
+        box-sizing: border-box; 
     }
 
     .track-line {
@@ -26,7 +29,7 @@ layout: default
         display: flex;
         flex-direction: column;
         align-items: center;
-        width: 25%;
+        width: 25%; /* 4 nodes * 25% = exactly 100% width! */
     }
 
     /* The Station Circles */
@@ -60,7 +63,6 @@ layout: default
         font-size: 1.1rem;
         font-weight: bold;
         color: #121212;
-        /* Replaced nowrap with a set width so long city names stack perfectly into two lines! */
         white-space: normal; 
         width: 150px; 
         line-height: 1.2; 
@@ -88,12 +90,15 @@ layout: default
         text-transform: uppercase;
     }
 
-    /* Clean Card CSS (Timeline dots removed) */
+    /* Clean Card CSS */
     .journal-feed { 
         max-width: 800px; 
         margin: 0 auto; 
         padding: 0 40px 60px 40px; 
+        box-sizing: border-box; /* Prevents padding from breaking page width */
+        overflow-x: hidden; /* Double protection against horizontal scrolling */
     }
+    
     .post-card { 
         display: flex; 
         flex-direction: row; 
@@ -105,6 +110,7 @@ layout: default
         margin-bottom: 30px;
         border-left: 6px solid #FF6319; 
         box-shadow: 0 4px 10px rgba(0,0,0,0.05); 
+        box-sizing: border-box;
     }
     .post-thumbnail { width: 150px; height: 150px; flex-shrink: 0; overflow: hidden; background-color: #f4f4f4; }
     .post-thumbnail img { width: 100%; height: 100%; object-fit: cover; }
@@ -112,68 +118,4 @@ layout: default
     .post-meta { font-weight: bold; color: #555; text-transform: uppercase; font-size: 0.75rem; letter-spacing: 1px; margin-bottom: 8px; }
     .post-content h2 { font-size: 1.5rem; margin: 0 0 10px 0; letter-spacing: -0.5px; }
     .post-content p { font-size: 1rem; line-height: 1.5; color: #555; margin-bottom: 15px; }
-    .read-more { display: inline-block; background-color: #121212; color: white; text-decoration: none; padding: 6px 12px; font-size: 0.85rem; font-weight: bold; text-transform: uppercase; }
-    .read-more:hover { background-color: #FF6319; }
-    
-    @media (max-width: 600px) { 
-        .journal-feed { padding: 0 20px 40px 20px; } 
-        .post-card { flex-direction: column; } 
-        .post-thumbnail { width: 100%; height: 200px; } 
-        .station-node { width: 33%; }
-    }
-</style>
-
-<div class="strip-map-container">
-    <div class="track-line">
-        
-        {% assign recent_posts = site.posts | slice: 0, 3 | reverse %}
-        
-        {% for post in recent_posts %}
-        <div class="station-node {% if forloop.last %}current{% endif %}">
-            <div class="angled-label">
-                {{ post.location }}
-                <span class="sub-label">{{ post.date | date: "%b %d" }}</span>
-            </div>
-            <div class="station-dot"></div>
-            <div class="mileage-stats">{{ post.total_miles | default: 0 }} MI</div>
-        </div>
-        {% endfor %}
-
-        <div class="station-node final">
-            <div class="angled-label">
-                New York, NY
-                <span class="sub-label">END</span>
-            </div>
-            <div class="station-dot"></div>
-            
-            {% assign current_total = site.posts.first.total_miles | default: 0 %}
-            {% assign miles_to_go = 3400 | minus: current_total %}
-            
-            <div class="mileage-stats">{{ miles_to_go }} TO GO</div>
-        </div>
-
-    </div>
-</div>
-
-<main class="journal-feed">
-    
-    {% for post in site.posts %}
-    <article class="post-card">
-        
-        {% if post.image %}
-        <div class="post-thumbnail">
-            <img src="{{ post.image }}" alt="Thumbnail for {{ post.title }}">
-        </div>
-        {% endif %}
-
-        <div class="post-content">
-            <div class="post-meta">{{ post.date | date: "%b %d" }} &nbsp;&bull;&nbsp; {{ post.location }}</div>
-            <h2>{{ post.title }}</h2>
-            <p>{{ post.content | strip_html | truncatewords: 30 }}</p>
-            <a href="{{ post.url }}" class="read-more">Read Entry &rarr;</a>
-        </div>
-
-    </article>
-    {% endfor %}
-
-</main>
+    .read-more { display: inline-block; background-color
