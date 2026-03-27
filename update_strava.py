@@ -168,28 +168,23 @@ def update_fun_stats():
     total_tents = 0
     total_beds = 0
     
-    # We include variations of the emoji to account for different phone keyboards
-    hotdog_emojis = ['🌭']
-    tent_emojis = ['⛺', '⛺️']
-    bed_emojis = ['🛏', '🛏️']
-    
     if os.path.exists(posts_dir):
         for filename in os.listdir(posts_dir):
             if filename.endswith(".md"):
                 with open(os.path.join(posts_dir, filename), 'r', encoding='utf-8') as f:
                     content = f.read()
                     
+                    # Normalizing the emojis: This forces all invisible mobile variations 
+                    # into one standard character so we never double-count!
+                    content = content.replace('⛺️', '⛺').replace('🛏️', '🛏')
+                    
                     # Count emojis in the raw markdown text
-                    for emoji in hotdog_emojis:
-                        total_hot_dogs += content.count(emoji)
-                    for emoji in tent_emojis:
-                        total_tents += content.count(emoji)
-                    for emoji in bed_emojis:
-                        total_beds += content.count(emoji)
+                    total_hot_dogs += content.count('🌭')
+                    total_tents += content.count('⛺')
+                    total_beds += content.count('🛏')
                         
     os.makedirs('_data', exist_ok=True)
     
-    # Write the stats directly without needing the yaml plugin!
     with open('_data/fun_stats.yml', 'w', encoding='utf-8') as f:
         f.write(f"hot_dogs: {total_hot_dogs}\n")
         f.write(f"nights_tent: {total_tents}\n")
