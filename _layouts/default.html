@@ -57,7 +57,7 @@
         .mta-tabs {
             display: flex;
             width: 100%;
-            height: 35px; /* Shrunk down for a sleeker profile */
+            height: 40px; /* Slightly taller to accommodate the icons comfortably */
         }
         
         .mta-tab {
@@ -68,7 +68,7 @@
             text-decoration: none;
             color: white;
             font-weight: bold;
-            font-size: 0.8rem; /* Shrunk the font size to match the sleeker bar */
+            font-size: 0.8rem;
             text-transform: uppercase;
             letter-spacing: 1px;
             overflow: hidden; 
@@ -76,11 +76,31 @@
             transition: flex 0.4s cubic-bezier(0.25, 1, 0.5, 1);
         }
 
+        /* ICON CSS */
+        .tab-icon {
+            width: 20px;
+            height: 20px;
+            flex-shrink: 0;
+            object-fit: contain;
+        }
+
+        /* CSS Magic: Turns black icons white for dark tabs! */
+        .tab-blue .tab-icon,
+        .tab-orange .tab-icon,
+        .tab-green .tab-icon,
+        .tab-red .tab-icon {
+            filter: invert(1); 
+        }
+        /* Yellow tab text/icon stays black for contrast */
+        .tab-yellow { color: #121212; }
+
+        /* TEXT ANIMATION CSS */
         .mta-tab span {
             opacity: 0;
             max-width: 0;
             white-space: nowrap;
             transition: all 0.4s ease;
+            display: inline-block;
         }
 
         .mta-tab:hover, 
@@ -88,11 +108,12 @@
             flex: 4; 
         }
 
+        /* Fades text in and adds a margin to separate it from the icon */
         .mta-tab:hover span, 
         .mta-tab.active span {
             opacity: 1;
             max-width: 150px; 
-            margin: 0 10px;
+            margin-left: 8px; 
         }
 
         /* Assigning the 5 exact MTA Route Colors */
@@ -100,7 +121,7 @@
         .tab-orange { background-color: #FF6319; }
         .tab-green  { background-color: #6CBE45; }
         .tab-red    { background-color: #EE352E; }
-        .tab-yellow { background-color: #FCCC0A; color: #121212; } 
+        .tab-yellow { background-color: #FCCC0A; } 
 
         /* The Content Wrapper */
         .container {
@@ -123,22 +144,27 @@
         
         <nav class="mta-tabs">
             <a href="{{ site.baseurl }}/" class="mta-tab tab-blue {% if page.url == '/' or page.url == '/index.html' %}active{% endif %}">
+                <img src="{{ site.baseurl }}/images/journal.png" class="tab-icon" alt="Journal">
                 <span>Journal</span>
             </a>
             
             <a href="{{ site.baseurl }}/tracker.html" class="mta-tab tab-orange {% if page.url contains 'tracker' %}active{% endif %}">
+                <img src="{{ site.baseurl }}/images/live-map.png" class="tab-icon" alt="Live Map">
                 <span>Live Map</span>
             </a>
             
             <a href="{{ site.baseurl }}/photos.html" class="mta-tab tab-green {% if page.url contains 'photos' %}active{% endif %}">
+                <img src="{{ site.baseurl }}/images/photos.png" class="tab-icon" alt="Photos">
                 <span>Photos</span>
             </a>
             
             <a href="{{ site.baseurl }}/board.html" class="mta-tab tab-red {% if page.url contains 'board' %}active{% endif %}">
+                <img src="{{ site.baseurl }}/images/message-board.png" class="tab-icon" alt="Message Board">
                 <span>Message Board</span>
             </a>
             
             <a href="{{ site.baseurl }}/stats.html" class="mta-tab tab-yellow {% if page.url contains 'stats' %}active{% endif %}">
+                <img src="{{ site.baseurl }}/images/stats.png" class="tab-icon" alt="Stats">
                 <span>Stats</span>
             </a>
         </nav>
