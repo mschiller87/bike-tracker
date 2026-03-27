@@ -2,14 +2,15 @@ import os
 import requests
 import json
 import polyline
-import time # We need this to pause for 1 second between map requests!
+import time
+import shutil # NEW: We need this tool to sweep folders clean!
 
 # --- 1. SETTINGS & AUTHENTICATION ---
 CLIENT_ID = os.environ['STRAVA_CLIENT_ID']
 CLIENT_SECRET = os.environ['STRAVA_CLIENT_SECRET']
 REFRESH_TOKEN = os.environ['STRAVA_REFRESH_TOKEN']
 
-TRIP_START_DATE = "2026-03-01" # Updated to your new start date!
+TRIP_START_DATE = "2026-03-01" 
 BASE_URL = "https://mschiller87.github.io/bike-tracker"
 
 print("Authenticating with Strava...")
@@ -30,21 +31,25 @@ print("Fetching activities...")
 activities_url = "https://www.strava.com/api/v3/athlete/activities?per_page=100"
 activities = requests.get(activities_url, headers=headers).json()
 
-# FILTER: Must be after start date AND must be a type of cycling!
+# FILTER: Must be after start date AND must be a cycling activity
 trip_rides = [
     a for a in activities 
     if a['start_date_local'][:10] >= TRIP_START_DATE 
-    and 'Ride' in a['type'] # Catches Ride, GravelRide, MountainBikeRide, EBikeRide
+    and 'Ride' in a['type'] 
 ]
 trip_rides.sort(key=lambda x: x['start_date_local'])
 
-os.makedirs('images', exist_ok=True)
+# --- 3. THE CLEAN SLATE PROTOCOL ---
+# Wipe the old posts folder completely clean so "ghost" runs/deleted rides disappear!
+if os.path.exists('_posts'):
+    shutil.rmtree('_posts')
 os.makedirs('_posts', exist_ok=True)
+os.makedirs('images', exist_ok=True)
 
 total_miles = 0
 geojson_features = []
 
-# --- 3. THE STRAVA-TO-BLOG PIPELINE ---
+# --- 4. THE STRAVA-TO-BLOG PIPELINE ---
 for ride in trip_rides:
     act_id = str(ride['id'])
     date_str = ride['start_date_local'][:10]
@@ -55,25 +60,20 @@ for ride in trip_rides:
     ride_miles = ride['distance'] * 0.000621371
     total_miles += ride_miles
     
-    location_str = "On the Road" # Default fallback
+    location_str = "On the Road" 
     
-    # Extract GPS line to find the ending location
     if ride['map']['summary_polyline']:
         coordinates = polyline.decode(ride['map']['summary_polyline'])
-        geojson_coords = [[lon, lat] for lat, lon in coordinates] # For the GeoJSON map
+        geojson_coords = [[lon, lat] for lat, lon in coordinates] 
         
-        # Grab the very last latitude and longitude coordinate of the ride!
         end_lat, end_lon = coordinates[-1]
         
-        # Hit OpenStreetMap's Reverse Geocoding API
-        # We must use a custom User-Agent and pause for 1 second to respect their free server limits
         nom_url = f"https://nominatim.openstreetmap.org/reverse?lat={end_lat}&lon={end_lon}&format=jsonv2"
         try:
             time.sleep(1) 
             geo_data = requests.get(nom_url, headers={'User-Agent': 'TranscontinentalBikeTracker/1.0'}).json()
             address = geo_data.get('address', {})
             
-            # Look for the most accurate city/town name available
             city = address.get('city') or address.get('town') or address.get('village') or address.get('hamlet') or address.get('county')
             state = address.get('state')
             
@@ -84,14 +84,12 @@ for ride in trip_rides:
         except Exception as e:
             print(f"Could not get location for {title}: {e}")
             
-        # Add to the map geojson
         geojson_features.append({
             "type": "Feature",
             "properties": {"name": title, "distance": ride['distance']},
             "geometry": {"type": "LineString", "coordinates": geojson_coords}
         })
 
-    # Get deep activity details (for descriptions and photos)
     detail_url = f"https://www.strava.com/api/v3/activities/{act_id}"
     details = requests.get(detail_url, headers=headers).json()
     description = details.get('description') or "No journal entry today... just pedaling!"
@@ -117,13 +115,13 @@ for ride in trip_rides:
         else:
             gallery_images_markdown += f"\n![Gallery Image]({repo_image_link})\n"
 
-    # --- 4. WRITE THE MARKDOWN DIARY ENTRY ---
+    # --- 5. WRITE THE MARKDOWN DIARY ENTRY ---
     filename = f"_posts/{date_str}-{act_id}.md"
     with open(filename, 'w', encoding='utf-8') as f:
         f.write("---\n")
         f.write("layout: default\n")
         f.write(f'title: "{title}"\n')
-        f.write(f'location: "{location_str}"\n') # Injects the newly found city/state!
+        f.write(f'location: "{location_str}"\n') 
         if primary_image_url:
             f.write(f'image: "{primary_image_url}"\n')
         f.write(f"total_miles: {int(total_miles)}\n")
@@ -134,8 +132,7 @@ for ride in trip_rides:
             f.write("\n### Today's Gallery\n")
             f.write(gallery_images_markdown)
 
-# Save the map file
 with open('strava_rides.geojson', 'w') as f:
     json.dump({"type": "FeatureCollection", "features": geojson_features}, f)
 
-print("SUCCESS: Blog synced, photos downloaded, locations mapped, and GPS updated!")
+print("SUCCESS: Blog synced, ghosts busted, photos downloaded, locations mapped, and GPS updated!")
