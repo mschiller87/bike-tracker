@@ -3,12 +3,36 @@ layout: default
 title: Live Tracker
 ---
 
-<div style="padding: 20px; text-align: center; max-width: 800px; margin: 0 auto;">
-    <h2 style="font-size: 2rem; margin-bottom: 10px; text-transform: uppercase;">Live GPS Tracker</h2>
-    <p style="color: #666; margin-bottom: 20px;">Blue = Planned Route | Orange = Actual Progress</p>
-</div>
+<style>
+    /* 1. Completely disable scrolling on this specific page */
+    body, html {
+        overflow: hidden !important; 
+        background-color: #e5e5e5;
+    }
+    
+    /* 2. Break out of the 800px width limit so it touches the edges of the screen */
+    .container {
+        max-width: 100% !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        box-shadow: none !important;
+    }
 
-<div id="map" style="width: 100%; height: 600px; border-bottom: 5px solid #121212; background-color: #e5e5e5;"></div>
+    /* 3. Force the map to fill the screen minus the exact height of your header */
+    #map {
+        width: 100%;
+        height: calc(100vh - 175px) !important; 
+        background-color: #e5e5e5;
+        border: none !important;
+    }
+    
+    /* Small tweak to ensure the Leaflet zoom buttons don't get hidden */
+    .leaflet-control-container {
+        margin-bottom: 20px;
+    }
+</style>
+
+<div id="map"></div>
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet-gpx/1.7.0/gpx.min.js"></script>
