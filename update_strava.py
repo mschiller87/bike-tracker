@@ -77,7 +77,6 @@ def main():
         total_calories += act.get('kilojoules', 0)
 
         # --- FETCH DETAILED ACTIVITY FOR DESCRIPTION ---
-        # The summary API doesn't include descriptions. We MUST fetch the detail!
         detail_url = f"https://www.strava.com/api/v3/activities/{act['id']}"
         detail_res = requests.get(detail_url, headers=header)
         
@@ -86,7 +85,72 @@ def main():
             detailed_act = detail_res.json()
             description = detailed_act.get('description', '') or ''
         else:
-            # Failsafe: If Strava rate-limits us, rescue the old text from the existing markdown file!
             filename = f"_posts/{date_str}-{act['id']}.md"
             if os.path.exists(filename):
-                with open(filename, '
+                with open(filename, 'r', encoding='utf-8') as f:
+                    parts = f.read().split('---', 2)
+                    if len(parts) >= 3:
+                        description = parts[2].strip()
+
+        # --- EMOJI COUNTER ---
+        total_hot_dogs += description.count('🌭')
+        total_tents += description.count('⛺')
+        total_beds += description.count('🛏')
+
+        # --- WEATHER & LOCATION ---
+        max_t, min_t = None, None
+        location_name = "On the Road"
+        
+        if act.get('start_latlng'):
+            lat, lon = act['start_latlng']
+            location_name = f"{round(lat, 2)}, {round(lon, 2)}"
+            
+            max_t, min_t = get_ride_weather(lat, lon, date_str)
+            
+            if max_t is not None and max_t > overall_hottest:
+                overall_hottest = max_t
+            if min_t is not None and min_t < overall_coldest:
+                overall_coldest = min_t
+
+        # Create Markdown File
+        filename = f"_posts/{date_str}-{act['id']}.md"
+        front_matter = f"""---
+layout: post
+title: "{title}"
+date: {date_str}
+location: "{location_name}"
+total_miles: {total_miles_ridden}
+---
+
+{description}
+"""
+        with open(filename, 'w', encoding='utf-8') as f:
+            f.write(front_matter)
+
+    # 4. FINALIZE MATH & SAVE DATA
+    if overall_hottest == -999: overall_hottest = 0
+    if overall_coldest == 999: overall_coldest = 0
+    
+    donuts_earned = int(total_calories / 300)
+    hours_biking = int(total_seconds_moving / 3600)
+    elevation_feet = int(total_meters_climbed * 3.28084)
+
+    fun_stats = {
+        'hot_dogs': total_hot_dogs,
+        'nights_tent': total_tents,
+        'nights_bed': total_beds,
+        'hottest_day': overall_hottest,
+        'coldest_night': overall_coldest,
+        'donuts': donuts_earned,
+        'hours_biking': hours_biking,
+        'elevation_feet': elevation_feet
+    }
+    
+    os.makedirs('_data', exist_ok=True)
+    with open('_data/fun_stats.yml', 'w', encoding='utf-8') as f:
+        yaml.dump(fun_stats, f, default_flow_style=False, sort_keys=False)
+    
+    print(f"✅ Sync Complete! Data saved: {fun_stats}")
+
+if __name__ == '__main__':
+    main()
