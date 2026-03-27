@@ -50,23 +50,36 @@ def main():
 
     os.makedirs('_posts', exist_ok=True)
     
-    # Weather Tracking Variables
+    # Tracking Variables
     overall_hottest = -999
     overall_coldest = 999
     total_miles_ridden = 0
+    total_calories = 0
+    total_hot_dogs = 0
+    total_tents = 0
+    total_beds = 0
 
     # 3. PROCESS EACH RIDE
     for act in activities:
-        # Only process actual rides
         if act['type'] != 'Ride':
             continue
 
         date_str = act['start_date_local'][:10]
         title = act['name'].replace('"', "'")
-        miles = round(act['distance'] * 0.000621371, 1) # Meters to Miles
+        miles = round(act['distance'] * 0.000621371, 1) 
         total_miles_ridden += miles
         
-        # Determine Location & Weather
+        # --- FUN STATS: Emojis & Calories (Direct from Strava) ---
+        description = act.get('description', '') or ''
+        total_hot_dogs += description.count('🌭')
+        # Check for both base and variation-selector versions of the emoji
+        total_tents += description.count('⛺') + description.count('⛺️')
+        total_beds += description.count('🛏') + description.count('🛏️')
+        
+        # Strava uses kilojoules for work done, which maps roughly 1:1 to dietary calories
+        total_calories += act.get('kilojoules', 0)
+
+        # --- WEATHER & LOCATION ---
         max_t, min_t = None, None
         location_name = "On the Road"
         
@@ -74,10 +87,8 @@ def main():
             lat, lon = act['start_latlng']
             location_name = f"{round(lat, 2)}, {round(lon, 2)}"
             
-            # Fetch Weather!
             max_t, min_t = get_ride_weather(lat, lon, date_str)
             
-            # Update all-time records safely
             if max_t is not None and max_t > overall_hottest:
                 overall_hottest = max_t
             if min_t is not None and min_t < overall_coldest:
@@ -85,8 +96,6 @@ def main():
 
         # Create Markdown Front Matter
         filename = f"_posts/{date_str}-{act['id']}.md"
-        description = act.get('description', '') or ''
-        
         front_matter = f"""---
 layout: post
 title: "{title}"
@@ -100,31 +109,20 @@ total_miles: {total_miles_ridden}
         with open(filename, 'w', encoding='utf-8') as f:
             f.write(front_matter)
 
-    # Clean up baseline weather values if no data was found
+    # 4. FINALIZE MATH & SAVE DATA
     if overall_hottest == -999: overall_hottest = 0
     if overall_coldest == 999: overall_coldest = 0
+    
+    # Assuming roughly 300 calories per average donut
+    donuts_earned = int(total_calories / 300)
 
-    # 4. PARSE EMOJIS FOR FUN STATS
-    print("🌭 Scanning posts for emojis...")
-    total_hot_dogs = 0
-    total_tents = 0
-    total_beds = 0
-
-    for filename in os.listdir('_posts'):
-        if filename.endswith(".md"):
-            with open(os.path.join('_posts', filename), 'r', encoding='utf-8') as f:
-                content = f.read()
-                total_hot_dogs += content.count('🌭')
-                total_tents += content.count('⛺')
-                total_beds += content.count('🛏')
-
-    # 5. SAVE EVERYTHING TO ONE DATA FILE
     fun_stats = {
         'hot_dogs': total_hot_dogs,
         'nights_tent': total_tents,
         'nights_bed': total_beds,
         'hottest_day': overall_hottest,
-        'coldest_night': overall_coldest
+        'coldest_night': overall_coldest,
+        'donuts': donuts_earned
     }
     
     os.makedirs('_data', exist_ok=True)
