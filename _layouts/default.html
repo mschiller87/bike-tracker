@@ -17,15 +17,18 @@
             background-image:
               linear-gradient(to right, #e9ecef 1px, transparent 1px),
               linear-gradient(to bottom, #e9ecef 1px, transparent 1px);
-            background-size: 60px 30px; /* Creates the rectangular tile pattern */
+            background-size: 60px 30px; 
             color: #121212;
         }
 
-        /* Bold MTA-Style Header */
+        /* Bold MTA-Style Sticky Header */
         header {
+            position: sticky; /* This makes the header stick! */
+            top: 0; /* Tells it to stick to the very top of the screen */
+            z-index: 1000; /* Ensures it stays visually on top of your maps and text */
             background-color: #121212;
             color: white;
-            padding: 40px 20px;
+            padding: 25px 20px; /* Slimmed down slightly so it doesn't take up the whole screen when scrolling */
             text-align: center;
             /* The 5-Color Subway Route Accent Line */
             border-bottom: 6px solid;
@@ -46,51 +49,32 @@
             margin-top: 10px;
         }
 
+        /* Navigation Menu */
+        nav {
+            margin-top: 25px;
+        }
+        nav a {
+            color: white; 
+            text-decoration: none; 
+            font-size: 1.1rem; 
+            font-weight: bold; 
+            text-transform: uppercase; 
+            margin: 0 15px; 
+            padding-bottom: 5px; 
+        }
+        nav a:hover {
+            color: #FF6319;
+        }
+        
         /* The Content Wrapper */
         .container {
             max-width: 800px;
             margin: 0 auto;
-            background-color: white; /* Keeps the map and posts clean against the tile background */
+            background-color: white; 
             padding: 0;
             box-shadow: 0 0 20px rgba(0,0,0,0.05);
             min-height: 100vh;
         }
-
-        /* Styles for the Markdown Posts */
-        .journal-feed { padding: 40px; }
-        .post {
-            border-left: 5px solid #121212; /* Acts as the "subway line" connecting posts */
-            padding-left: 25px;
-            margin-bottom: 60px;
-            position: relative;
-        }
-        /* The "Subway Stop" Circle */
-        .post::before {
-            content: '';
-            position: absolute;
-            left: -14px;
-            top: 0;
-            width: 18px;
-            height: 18px;
-            background: #ffffff;
-            border-radius: 50%;
-            border: 5px solid #121212;
-        }
-        .post-meta {
-            font-weight: bold;
-            color: #FF6319; /* MTA Orange */
-            text-transform: uppercase;
-            font-size: 0.85rem;
-            margin-bottom: 5px;
-        }
-        .post h2 {
-            font-size: 2.2rem;
-            margin: 0 0 15px 0;
-            font-weight: bold;
-            letter-spacing: -0.5px;
-        }
-        .post img { max-width: 100%; height: auto; border: 1px solid #ccc; margin: 15px 0; }
-        .post p { font-size: 1.15rem; line-height: 1.6; color: #333; }
     </style>
 </head>
 <body>
@@ -99,9 +83,9 @@
         <h1>The Transcontinental</h1>
         <p>Pacific to Atlantic &nbsp;&bull;&nbsp; Summer 2026</p>
         
-        <nav style="margin-top: 25px;">
-            <a href="{{ site.baseurl }}/" style="color: white; text-decoration: none; font-size: 1.1rem; font-weight: bold; text-transform: uppercase; margin: 0 15px; padding-bottom: 5px; border-bottom: 3px solid #FF6319;">Journal</a>
-            <a href="{{ site.baseurl }}/tracker.html" style="color: white; text-decoration: none; font-size: 1.1rem; font-weight: bold; text-transform: uppercase; margin: 0 15px; padding-bottom: 5px; border-bottom: 3px solid transparent;">Live Map</a>
+        <nav>
+            <a href="{{ site.baseurl }}/" style="border-bottom: 3px solid #FF6319;">Journal</a>
+            <a href="{{ site.baseurl }}/tracker.html" style="border-bottom: 3px solid transparent;">Live Map</a>
         </nav>
     </header>
 
