@@ -3,7 +3,7 @@ layout: default
 ---
 
 <style>
-    /* Sleek Abstract Strip Map CSS */
+    /* Sleek Abstract Strip Map CSS (Restored) */
     .strip-map-container {
         max-width: 800px;
         margin: 0 auto; 
@@ -25,10 +25,9 @@ layout: default
         display: flex;
         flex-direction: column;
         align-items: center;
-        width: 25%; /* Math fixed: 4 nodes * 25% = exactly 100% width! */
+        width: 25%;
     }
 
-    /* The Station Circles */
     .station-dot {
         position: absolute;
         bottom: -11px; 
@@ -49,7 +48,6 @@ layout: default
         border-color: #EE352E; 
     }
 
-    /* The Sleek Angled Text */
     .angled-label {
         position: absolute;
         bottom: 25px; 
@@ -66,67 +64,60 @@ layout: default
     }
 
     .sub-label {
-        display: block; 
-        font-size: 0.8rem;
-        color: #888;
-        font-weight: normal;
-        margin-top: 2px;
-        text-transform: uppercase;
-        letter-spacing: 1px;
+        display: block; font-size: 0.8rem; color: #888; font-weight: normal; margin-top: 2px; text-transform: uppercase; letter-spacing: 1px;
     }
 
     .mileage-stats {
-        position: absolute;
-        top: 25px; 
-        font-size: 0.85rem;
-        font-weight: bold;
-        color: #555;
-        text-align: center;
-        width: 100%;
-        text-transform: uppercase;
+        position: absolute; top: 25px; font-size: 0.85rem; font-weight: bold; color: #555; text-align: center; width: 100%; text-transform: uppercase;
     }
 
-    /* Clean Card CSS */
+    /* Clean Card CSS (Restored & Upgraded) */
     .journal-feed { 
-        max-width: 800px; 
-        margin: 0 auto; 
-        padding: 0 40px 60px 40px; 
+        max-width: 800px; margin: 0 auto; padding: 0 40px 60px 40px; 
     }
     
     .post-card { 
-        display: flex; 
-        flex-direction: row; 
-        align-items: flex-start; 
-        gap: 20px; 
-        background: #fff; 
-        border: 1px solid #e0e0e0; 
-        padding: 20px; 
-        margin-bottom: 30px;
-        border-left: 6px solid #FF6319; 
-        box-shadow: 0 4px 10px rgba(0,0,0,0.05); 
+        display: flex; flex-direction: row; align-items: flex-start; gap: 20px; 
+        background: #fff; border: 1px solid #e0e0e0; padding: 20px; margin-bottom: 30px;
+        border-left: 6px solid #FF6319; box-shadow: 0 4px 10px rgba(0,0,0,0.05); 
+        transition: all 0.3s ease;
     }
-    .post-thumbnail { width: 150px; height: 150px; flex-shrink: 0; overflow: hidden; background-color: #f4f4f4; }
+    
+    .post-thumbnail { 
+        width: 150px; height: 150px; flex-shrink: 0; overflow: hidden; background-color: #f4f4f4; transition: all 0.3s ease;
+    }
+    
     .post-thumbnail img { width: 100%; height: 100%; object-fit: cover; }
-    .post-content { flex: 1; }
+    
+    .post-content { flex: 1; min-width: 0; }
     .post-meta { font-weight: bold; color: #555; text-transform: uppercase; font-size: 0.75rem; letter-spacing: 1px; margin-bottom: 8px; }
     .post-content h2 { font-size: 1.5rem; margin: 0 0 10px 0; letter-spacing: -0.5px; }
-    .post-content p { font-size: 1rem; line-height: 1.5; color: #555; margin-bottom: 15px; }
-    .read-more { display: inline-block; background-color: #121212; color: white; text-decoration: none; padding: 6px 12px; font-size: 0.85rem; font-weight: bold; text-transform: uppercase; }
-    .read-more:hover { background-color: #FF6319; }
     
-    /* THE MOBILE FIXES */
+    .post-preview p { font-size: 1rem; line-height: 1.5; color: #555; margin-bottom: 10px; margin-top: 0; }
+    
+    /* Styling for the expanded full content */
+    .post-full { display: none; font-size: 1rem; line-height: 1.6; color: #333; }
+    .post-full img { max-width: 100%; height: auto; border-radius: 4px; margin: 15px 0; }
+    .post-full h3 { margin-top: 25px; margin-bottom: 10px; font-size: 1.2rem; text-transform: uppercase; letter-spacing: 1px; }
+
+    /* The new minimal toggle link */
+    .expand-toggle {
+        background: none; border: none; padding: 0; font-size: 0.85rem; font-weight: bold;
+        color: #0039A6; text-transform: uppercase; letter-spacing: 1px; cursor: pointer; text-decoration: none;
+        display: inline-block; margin-top: 5px;
+    }
+    .expand-toggle:hover { color: #FF6319; text-decoration: underline; }
+
+    /* When the card is expanded, stack the layout so images get full width */
+    .post-card.expanded { flex-direction: column; }
+    .post-card.expanded .post-thumbnail { width: 100%; height: auto; max-height: 400px; }
+
     @media (max-width: 600px) { 
         .journal-feed { padding: 0 20px 40px 20px; } 
         .post-card { flex-direction: column; } 
         .post-thumbnail { width: 100%; height: 200px; } 
-        
         .station-node { width: 25%; }
-        
-        .angled-label { 
-            font-size: 0.8rem; 
-            width: 110px; 
-            bottom: 15px;
-        }
+        .angled-label { font-size: 0.8rem; width: 110px; bottom: 15px; }
         .sub-label { font-size: 0.7rem; }
         .mileage-stats { font-size: 0.7rem; top: 15px; }
     }
@@ -134,9 +125,7 @@ layout: default
 
 <div class="strip-map-container">
     <div class="track-line">
-        
         {% assign recent_posts = site.posts | slice: 0, 3 | reverse %}
-        
         {% for post in recent_posts %}
         <div class="station-node {% if forloop.last %}current{% endif %}">
             <div class="angled-label">
@@ -154,30 +143,62 @@ layout: default
                 <span class="sub-label">END</span>
             </div>
             <div class="station-dot"></div>
-            
             {% assign current_total = site.posts.first.total_miles | default: 0 %}
             {% assign miles_to_go = 3400 | minus: current_total %}
-            
             <div class="mileage-stats">{{ miles_to_go }} TO GO</div>
         </div>
-
     </div>
 </div>
 
 <main class="journal-feed">
     {% for post in site.posts %}
     <article class="post-card">
+        
         {% if post.image %}
         <div class="post-thumbnail">
             <img src="{{ post.image }}" alt="Thumbnail for {{ post.title }}">
         </div>
         {% endif %}
+
         <div class="post-content">
             <div class="post-meta">{{ post.date | date: "%b %d" }} &nbsp;&bull;&nbsp; {{ post.location }}</div>
             <h2>{{ post.title }}</h2>
-            <p>{{ post.content | strip_html | truncatewords: 30 }}</p>
-            <a href="{{ post.url }}" class="read-more">Read Entry &rarr;</a>
+            
+            <div class="post-preview">
+                <p>{{ post.content | strip_html | truncatewords: 30 }}</p>
+            </div>
+
+            <div class="post-full">
+                {{ post.content | markdownify }}
+            </div>
+
+            <button class="expand-toggle" onclick="togglePost(this)">Full Entry &darr;</button>
         </div>
+
     </article>
     {% endfor %}
 </main>
+
+<script>
+    function togglePost(btn) {
+        // Find the specific card elements
+        const card = btn.closest('.post-card');
+        const preview = card.querySelector('.post-preview');
+        const full = card.querySelector('.post-full');
+        
+        // Toggle logic
+        if (full.style.display === 'none' || full.style.display === '') {
+            // Expand it
+            full.style.display = 'block';
+            preview.style.display = 'none';
+            btn.innerHTML = 'Close Entry &uarr;';
+            card.classList.add('expanded'); // Re-arranges the thumbnail to look better with long text
+        } else {
+            // Collapse it
+            full.style.display = 'none';
+            preview.style.display = 'block';
+            btn.innerHTML = 'Full Entry &darr;';
+            card.classList.remove('expanded');
+        }
+    }
+</script>
