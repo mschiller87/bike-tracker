@@ -6,8 +6,9 @@ layout: default
     /* Sleek Abstract Strip Map CSS */
     .strip-map-container {
         max-width: 800px;
-        margin: 80px auto 80px auto; /* Added extra top margin to clear the sticky header comfortably */
-        padding: 0 20px;
+        margin: 0 auto; 
+        /* MASSIVE top padding pulls the white background all the way up under the header */
+        padding: 180px 20px 80px 20px; 
         font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
     }
 
@@ -18,7 +19,6 @@ layout: default
         border-bottom: 6px solid #121212; 
         padding-bottom: 0;
         position: relative;
-        margin-top: 120px; 
     }
 
     .station-node {
@@ -41,13 +41,11 @@ layout: default
         z-index: 2;
     }
 
-    /* Highlight the current location with MTA Orange */
     .station-node.current .station-dot {
         border-color: #FF6319; 
         box-shadow: 0 0 0 4px rgba(255, 99, 25, 0.15);
     }
 
-    /* Highlight NYC with MTA Red */
     .station-node.final .station-dot {
         border-color: #EE352E; 
     }
@@ -62,24 +60,23 @@ layout: default
         font-size: 1.1rem;
         font-weight: bold;
         color: #121212;
-        white-space: nowrap;
+        /* Replaced nowrap with a set width so long city names stack perfectly into two lines! */
+        white-space: normal; 
+        width: 150px; 
+        line-height: 1.2; 
         letter-spacing: -0.5px;
-        line-height: 1.2; /* Better line spacing for stacked text */
     }
 
-    /* Subtext for dates (Now forced to a new line!) */
     .sub-label {
-        display: block; /* This drops it right beneath the city name */
+        display: block; 
         font-size: 0.8rem;
         color: #888;
         font-weight: normal;
-        margin-left: 0;
         margin-top: 2px;
         text-transform: uppercase;
         letter-spacing: 1px;
     }
 
-    /* Mileage below the track */
     .mileage-stats {
         position: absolute;
         top: 25px; 
@@ -91,12 +88,24 @@ layout: default
         text-transform: uppercase;
     }
 
-    /* Timeline & Post-Card CSS */
-    .timeline-feed { max-width: 800px; margin: 0 auto; padding: 40px 20px 40px 40px; }
-    .timeline-stop { border-left: 6px solid #121212; padding-left: 35px; padding-bottom: 50px; position: relative; }
-    .timeline-stop:last-child { border-left-color: transparent; }
-    .timeline-stop::before { content: ''; position: absolute; left: -15px; top: 20px; width: 12px; height: 12px; background: #ffffff; border: 6px solid #0039A6; border-radius: 50%; z-index: 2; }
-    .post-card { display: flex; flex-direction: row; align-items: flex-start; gap: 20px; background: #fff; border: 1px solid #e0e0e0; padding: 20px; border-left: 6px solid #FF6319; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
+    /* Clean Card CSS (Timeline dots removed) */
+    .journal-feed { 
+        max-width: 800px; 
+        margin: 0 auto; 
+        padding: 0 40px 60px 40px; 
+    }
+    .post-card { 
+        display: flex; 
+        flex-direction: row; 
+        align-items: flex-start; 
+        gap: 20px; 
+        background: #fff; 
+        border: 1px solid #e0e0e0; 
+        padding: 20px; 
+        margin-bottom: 30px;
+        border-left: 6px solid #FF6319; 
+        box-shadow: 0 4px 10px rgba(0,0,0,0.05); 
+    }
     .post-thumbnail { width: 150px; height: 150px; flex-shrink: 0; overflow: hidden; background-color: #f4f4f4; }
     .post-thumbnail img { width: 100%; height: 100%; object-fit: cover; }
     .post-content { flex: 1; }
@@ -107,9 +116,7 @@ layout: default
     .read-more:hover { background-color: #FF6319; }
     
     @media (max-width: 600px) { 
-        .timeline-feed { padding-left: 20px; } 
-        .timeline-stop { padding-left: 25px; border-left-width: 4px; } 
-        .timeline-stop::before { left: -11px; width: 10px; height: 10px; border-width: 4px; } 
+        .journal-feed { padding: 0 20px 40px 20px; } 
         .post-card { flex-direction: column; } 
         .post-thumbnail { width: 100%; height: 200px; } 
         .station-node { width: 33%; }
@@ -148,27 +155,25 @@ layout: default
     </div>
 </div>
 
-<main class="timeline-feed">
+<main class="journal-feed">
     
     {% for post in site.posts %}
-    <div class="timeline-stop">
-        <article class="post-card">
-            
-            {% if post.image %}
-            <div class="post-thumbnail">
-                <img src="{{ post.image }}" alt="Thumbnail for {{ post.title }}">
-            </div>
-            {% endif %}
+    <article class="post-card">
+        
+        {% if post.image %}
+        <div class="post-thumbnail">
+            <img src="{{ post.image }}" alt="Thumbnail for {{ post.title }}">
+        </div>
+        {% endif %}
 
-            <div class="post-content">
-                <div class="post-meta">{{ post.date | date: "%b %d" }} &nbsp;&bull;&nbsp; {{ post.location }}</div>
-                <h2>{{ post.title }}</h2>
-                <p>{{ post.content | strip_html | truncatewords: 30 }}</p>
-                <a href="{{ post.url }}" class="read-more">Read Entry &rarr;</a>
-            </div>
+        <div class="post-content">
+            <div class="post-meta">{{ post.date | date: "%b %d" }} &nbsp;&bull;&nbsp; {{ post.location }}</div>
+            <h2>{{ post.title }}</h2>
+            <p>{{ post.content | strip_html | truncatewords: 30 }}</p>
+            <a href="{{ post.url }}" class="read-more">Read Entry &rarr;</a>
+        </div>
 
-        </article>
-    </div>
+    </article>
     {% endfor %}
 
 </main>
