@@ -1,0 +1,150 @@
+---
+layout: default
+title: Sprint Game
+---
+
+<style>
+    .game-container {
+        max-width: 800px;
+        margin: 40px auto;
+        padding: 0 20px;
+        text-align: center;
+        font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    }
+    canvas {
+        background: #f0f0f0;
+        border: 4px solid #121212;
+        display: block;
+        margin: 0 auto;
+        max-width: 100%;
+        cursor: pointer;
+        image-rendering: pixelated;
+    }
+    .game-ui {
+        margin-top: 20px;
+        background: #fff;
+        padding: 20px;
+        border: 1px solid #e0e0e0;
+        border-top: 6px solid #EE352E;
+    }
+    .btn-start {
+        background: #121212; color: white; border: none;
+        padding: 10px 30px; font-weight: bold; text-transform: uppercase;
+        cursor: pointer; font-size: 1.2rem;
+    }
+    #high-score { color: #FF6319; font-weight: bold; }
+</style>
+
+<div class="game-container">
+    <div class="game-ui">
+        <h2 id="score-display">DISTANCE: 0 MI</h2>
+        <p>BEST: <span id="high-score">0 MI</span></p>
+        <canvas id="gameCanvas" width="600" height="300"></canvas>
+        <p style="margin-top: 15px; font-size: 0.8rem; color: #888; text-transform: uppercase; letter-spacing: 1px;">
+            Tap or Spacebar to hop over potholes and dogs!
+        </p>
+        <button class="btn-start" onclick="startGame()">Start Race</button>
+    </div>
+</div>
+
+<script>
+    const canvas = document.getElementById('gameCanvas');
+    const ctx = canvas.getContext('2d');
+    const scoreDisplay = document.getElementById('score-display');
+    const highScoreDisplay = document.getElementById('high-score');
+
+    let gameRunning = false;
+    let score = 0;
+    let highScore = localStorage.getItem('bike_high_score') || 0;
+    highScoreDisplay.innerText = highScore + " MI";
+
+    let bike = { x: 50, y: 230, w: 40, h: 30, dy: 0, jumpPower: -12, gravity: 0.6, grounded: true };
+    let obstacles = [];
+    let frame = 0;
+
+    function startGame() {
+        if (gameRunning) return;
+        gameRunning = true;
+        score = 0;
+        obstacles = [];
+        bike.y = 230;
+        bike.dy = 0;
+        bike.grounded = true;
+        animate();
+    }
+
+    function jump() {
+        if (bike.grounded && gameRunning) {
+            bike.dy = bike.jumpPower;
+            bike.grounded = false;
+        }
+    }
+
+    // Controls
+    window.addEventListener('keydown', (e) => { if (e.code === 'Space') jump(); });
+    canvas.addEventListener('touchstart', (e) => { e.preventDefault(); jump(); });
+    canvas.addEventListener('mousedown', jump);
+
+    function animate() {
+        if (!gameRunning) return;
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        // Ground line
+        ctx.strokeStyle = '#121212';
+        ctx.lineWidth = 4;
+        ctx.beginPath(); ctx.moveTo(0, 260); ctx.lineTo(600, 260); ctx.stroke();
+
+        // Physics
+        bike.dy += bike.gravity;
+        bike.y += bike.dy;
+        if (bike.y > 230) { bike.y = 230; bike.dy = 0; bike.grounded = true; }
+
+        // Draw Pixel Bike (Simplified)
+        ctx.fillStyle = '#FF6319'; // MTA Orange
+        ctx.fillRect(bike.x, bike.y, bike.w, bike.h - 10); // Frame
+        ctx.fillStyle = '#121212';
+        ctx.beginPath(); ctx.arc(bike.x + 5, bike.y + 25, 8, 0, Math.PI * 2); ctx.fill(); // Back wheel
+        ctx.beginPath(); ctx.arc(bike.x + 35, bike.y + 25, 8, 0, Math.PI * 2); ctx.fill(); // Front wheel
+
+        // Obstacles
+        if (frame % 90 === 0) {
+            obstacles.push({ x: 600, w: 20, h: 20 + Math.random() * 20, type: Math.random() > 0.5 ? 'pothole' : 'dog' });
+        }
+
+        obstacles.forEach((obs, i) => {
+            obs.x -= 5 + (score / 100); // Speed up as you go
+            ctx.fillStyle = obs.type === 'dog' ? '#EE352E' : '#555';
+            ctx.fillRect(obs.x, 260 - obs.h, obs.w, obs.h);
+
+            // Collision Detection
+            if (bike.x < obs.x + obs.w && bike.x + bike.w > obs.x && bike.y + bike.h > 260 - obs.h) {
+                gameOver();
+            }
+
+            if (obs.x + obs.w < 0) {
+                obstacles.splice(i, 1);
+                score++;
+                scoreDisplay.innerText = `DISTANCE: ${score} MI`;
+            }
+        });
+
+        frame++;
+        requestAnimationFrame(animate);
+    }
+
+    function gameOver() {
+        gameRunning = false;
+        if (score > highScore) {
+            highScore = score;
+            localStorage.setItem('bike_high_score', highScore);
+            highScoreDisplay.innerText = highScore + " MI";
+        }
+        ctx.fillStyle = 'rgba(0,0,0,0.5)';
+        ctx.fillRect(0,0,canvas.width, canvas.height);
+        ctx.fillStyle = 'white';
+        ctx.font = 'bold 30px Helvetica';
+        ctx.fillText("FLAT TIRE!", 220, 150);
+        ctx.font = '16px Helvetica';
+        ctx.fillText("Tap Start to fix it and ride again", 190, 180);
+    }
+</script>
