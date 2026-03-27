@@ -42,7 +42,7 @@ def main():
         print("❌ Failed to get access token!")
         return
 
-    # 2. FETCH ACTIVITIES
+    # 2. FETCH ACTIVITIES LIST
     activities_url = "https://www.strava.com/api/v3/athlete/activities?per_page=100"
     header = {'Authorization': f'Bearer {access_token}'}
     print("📥 Downloading activities...")
@@ -55,6 +55,9 @@ def main():
     overall_coldest = 999
     total_miles_ridden = 0
     total_calories = 0
+    total_seconds_moving = 0
+    total_meters_climbed = 0
+    
     total_hot_dogs = 0
     total_tents = 0
     total_beds = 0
@@ -66,70 +69,24 @@ def main():
 
         date_str = act['start_date_local'][:10]
         title = act['name'].replace('"', "'")
-        miles = round(act['distance'] * 0.000621371, 1) 
-        total_miles_ridden += miles
         
-        # --- FUN STATS: Emojis & Calories (Direct from Strava) ---
-        description = act.get('description', '') or ''
-        total_hot_dogs += description.count('🌭')
-        # Check for both base and variation-selector versions of the emoji
-        total_tents += description.count('⛺') + description.count('⛺️')
-        total_beds += description.count('🛏') + description.count('🛏️')
-        
-        # Strava uses kilojoules for work done, which maps roughly 1:1 to dietary calories
+        # --- NEW CORE STATS ---
+        total_miles_ridden += round(act['distance'] * 0.000621371, 1) 
+        total_seconds_moving += act.get('moving_time', 0)
+        total_meters_climbed += act.get('total_elevation_gain', 0)
         total_calories += act.get('kilojoules', 0)
 
-        # --- WEATHER & LOCATION ---
-        max_t, min_t = None, None
-        location_name = "On the Road"
+        # --- FETCH DETAILED ACTIVITY FOR DESCRIPTION ---
+        # The summary API doesn't include descriptions. We MUST fetch the detail!
+        detail_url = f"https://www.strava.com/api/v3/activities/{act['id']}"
+        detail_res = requests.get(detail_url, headers=header)
         
-        if act.get('start_latlng'):
-            lat, lon = act['start_latlng']
-            location_name = f"{round(lat, 2)}, {round(lon, 2)}"
-            
-            max_t, min_t = get_ride_weather(lat, lon, date_str)
-            
-            if max_t is not None and max_t > overall_hottest:
-                overall_hottest = max_t
-            if min_t is not None and min_t < overall_coldest:
-                overall_coldest = min_t
-
-        # Create Markdown Front Matter
-        filename = f"_posts/{date_str}-{act['id']}.md"
-        front_matter = f"""---
-layout: post
-title: "{title}"
-date: {date_str}
-location: "{location_name}"
-total_miles: {total_miles_ridden}
----
-
-{description}
-"""
-        with open(filename, 'w', encoding='utf-8') as f:
-            f.write(front_matter)
-
-    # 4. FINALIZE MATH & SAVE DATA
-    if overall_hottest == -999: overall_hottest = 0
-    if overall_coldest == 999: overall_coldest = 0
-    
-    # Assuming roughly 300 calories per average donut
-    donuts_earned = int(total_calories / 300)
-
-    fun_stats = {
-        'hot_dogs': total_hot_dogs,
-        'nights_tent': total_tents,
-        'nights_bed': total_beds,
-        'hottest_day': overall_hottest,
-        'coldest_night': overall_coldest,
-        'donuts': donuts_earned
-    }
-    
-    os.makedirs('_data', exist_ok=True)
-    with open('_data/fun_stats.yml', 'w', encoding='utf-8') as f:
-        yaml.dump(fun_stats, f, default_flow_style=False, sort_keys=False)
-    
-    print(f"✅ Sync Complete! Data saved: {fun_stats}")
-
-if __name__ == '__main__':
-    main()
+        description = ''
+        if detail_res.status_code == 200:
+            detailed_act = detail_res.json()
+            description = detailed_act.get('description', '') or ''
+        else:
+            # Failsafe: If Strava rate-limits us, rescue the old text from the existing markdown file!
+            filename = f"_posts/{date_str}-{act['id']}.md"
+            if os.path.exists(filename):
+                with open(filename, '
