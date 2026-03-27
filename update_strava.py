@@ -156,3 +156,49 @@ with open('_data/automated_stats.yml', 'w') as f:
     f.write(f"total_calories: {int(total_calories)}\n")
 
 print("SUCCESS: Blog synced, stats calculated, and data saved!")
+
+# ==========================================
+# EMOJI FUN STATS AUTOMATION
+# ==========================================
+def update_fun_stats():
+    import os
+    import yaml
+    
+    posts_dir = '_posts'
+    total_hot_dogs = 0
+    total_tents = 0
+    total_beds = 0
+    
+    # We include variations of the emoji to account for different phone keyboards
+    hotdog_emojis = ['🌭']
+    tent_emojis = ['⛺', '⛺️']
+    bed_emojis = ['🛏', '🛏️']
+    
+    if os.path.exists(posts_dir):
+        for filename in os.listdir(posts_dir):
+            if filename.endswith(".md"):
+                with open(os.path.join(posts_dir, filename), 'r', encoding='utf-8') as f:
+                    content = f.read()
+                    
+                    # Count emojis in the raw markdown text
+                    for emoji in hotdog_emojis:
+                        total_hot_dogs += content.count(emoji)
+                    for emoji in tent_emojis:
+                        total_tents += content.count(emoji)
+                    for emoji in bed_emojis:
+                        total_beds += content.count(emoji)
+                        
+    fun_stats = {
+        'hot_dogs': total_hot_dogs,
+        'nights_tent': total_tents,
+        'nights_bed': total_beds
+    }
+    
+    os.makedirs('_data', exist_ok=True)
+    with open('_data/fun_stats.yml', 'w', encoding='utf-8') as f:
+        yaml.dump(fun_stats, f, default_flow_style=False, sort_keys=False)
+    
+    print(f"✅ Fun Stats Updated: {total_hot_dogs} Hot Dogs, {total_tents} Tents, {total_beds} Beds")
+
+# Run the function!
+update_fun_stats()
