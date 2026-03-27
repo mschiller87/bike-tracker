@@ -20,10 +20,10 @@ jobs:
         with:
           python-version: '3.x'
 
-     - name: Install dependencies
-      run: |
-        python -m pip install --upgrade pip
-        pip install -r requirements.txt
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
 
       - name: Run Strava update script
         env:
@@ -36,6 +36,6 @@ jobs:
         run: |
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
-          git add strava_rides.geojson
-          git commit -m "Auto-update Strava rides" || echo "No changes to commit"
+          git add strava_rides.geojson _posts/ images/
+          git commit -m "Auto-update Strava rides, posts, and photos" || echo "No changes to commit"
           git push
