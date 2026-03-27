@@ -10,46 +10,24 @@ title: Message Board
         padding: 0 20px;
         font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
     }
-    
-    .board-header {
-        text-align: center;
-        margin-bottom: 40px;
-    }
 
-    .board-header h2 {
-        color: #121212;
-        text-transform: uppercase;
-        border-bottom: 4px solid #EE352E;
-        display: inline-block;
-        padding-bottom: 5px;
-        letter-spacing: -0.5px;
-        margin-bottom: 10px;
-    }
-
-    /* Giscus container styling */
+    /* Giscus container styling - clean and flush */
     .giscus {
         background: #fff;
         padding: 20px;
         border: 1px solid #e0e0e0;
         box-shadow: 0 4px 10px rgba(0,0,0,0.05);
-        border-top: 6px solid #EE352E;
+        border-top: 6px solid #EE352E; /* MTA Red Branding */
     }
 </style>
 
 <div class="board-container">
-    <div class="board-header">
-        <h2>Message Board</h2>
-        <p style="color: #666; text-transform: uppercase; letter-spacing: 1px; font-size: 0.85rem;">
-            Powered by GitHub Discussions. Log in with GitHub to post!
-        </p>
-    </div>
-
     <div class="giscus">
         <script src="https://giscus.app/client.js"
-                data-repo="mschiller87/bike-tracker"
-                data-repo-id="R_kgDORxEVrw" 
+                data-repo="YOUR_GITHUB_USERNAME/bike-tracker"
+                data-repo-id="R_kgD..." 
                 data-category="Announcements"
-                data-category-id="DIC_kwDORxEVr84C5YE4"
+                data-category-id="DIC_kwD..."
                 data-mapping="pathname"
                 data-strict="0"
                 data-reactions-enabled="1"
