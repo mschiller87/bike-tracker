@@ -77,6 +77,7 @@ for ride in trip_rides:
             "geometry": {"type": "LineString", "coordinates": geojson_coords}
         })
 
+    # THE CACHE CHECK
     is_cached = False
     if not FORCE_REBUILD and os.path.exists(filename):
         with open(filename, 'r', encoding='utf-8') as f:
@@ -85,8 +86,9 @@ for ride in trip_rides:
                 is_cached = True
                 for line in content.split('\n'):
                     if line.startswith('ride_elevation:'): total_elevation_ft += float(line.split(':')[1].strip())
-                    if line.startswith('ride_moving_time:'): total_moving_seconds += int(line.split(':')[1].strip())
-                    if line.startswith('ride_calories:'): total_calories += int(line.split(':')[1].strip())
+                    # FIXED: Wrapped in float() first to handle unexpected decimals
+                    if line.startswith('ride_moving_time:'): total_moving_seconds += int(float(line.split(':')[1].strip()))
+                    if line.startswith('ride_calories:'): total_calories += int(float(line.split(':')[1].strip()))
                 print(f"⏩ CACHED: Skipping API calls for {title}")
                 continue 
 
@@ -145,7 +147,6 @@ for ride in trip_rides:
         else:
             gallery_images.append(repo_image_link)
 
-    # Reverted back to chronological order (oldest to newest for the day)!
     gallery_images_markdown = ""
     for link in gallery_images:
         gallery_images_markdown += f"\n![Gallery Image]({link})\n"
@@ -192,9 +193,10 @@ def update_fun_stats():
             if filename.endswith(".md"):
                 with open(os.path.join(posts_dir, filename), 'r', encoding='utf-8') as f:
                     for line in f:
-                        if line.startswith('ride_hot_dogs:'): total_hot_dogs += int(line.split(':')[1].strip())
-                        if line.startswith('ride_tents:'): total_tents += int(line.split(':')[1].strip())
-                        if line.startswith('ride_beds:'): total_beds += int(line.split(':')[1].strip())
+                        # FIXED: Wrapped in float() here too, just to be extremely safe!
+                        if line.startswith('ride_hot_dogs:'): total_hot_dogs += int(float(line.split(':')[1].strip()))
+                        if line.startswith('ride_tents:'): total_tents += int(float(line.split(':')[1].strip()))
+                        if line.startswith('ride_beds:'): total_beds += int(float(line.split(':')[1].strip()))
                         
     os.makedirs('_data', exist_ok=True)
     with open('_data/fun_stats.yml', 'w', encoding='utf-8') as f:
