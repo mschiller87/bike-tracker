@@ -17,7 +17,7 @@ layout: default
     .sub-label { display: block; font-size: 0.8rem; color: #888; font-weight: normal; margin-top: 2px; text-transform: uppercase; letter-spacing: 1px; }
     .mileage-stats { position: absolute; top: 25px; font-size: 0.85rem; font-weight: bold; color: #555; text-align: center; width: 100%; text-transform: uppercase; }
 
-    /* 2. The Refined Journal Feed (Border-free, Square Thumbnails) */
+    /* 2. The Refined Journal Feed */
     .journal-feed { 
         max-width: 800px; margin: 0 auto; padding: 0 40px 60px 40px; 
     }
@@ -32,7 +32,6 @@ layout: default
         transition: all 0.3s ease;
     }
     
-    /* Hard-coded Square Thumbnail locked on the left */
     .post-thumbnail { 
         width: 250px; 
         height: 250px; 
@@ -41,51 +40,58 @@ layout: default
     }
     .post-thumbnail img { width: 100%; height: 100%; object-fit: cover; display: block; }
     
-    /* Uses Flexbox to pin button to bottom right */
     .post-content { 
         flex: 1; 
         min-width: 0; 
         padding: 25px 30px; 
         display: flex; 
         flex-direction: column; 
-        min-height: 250px; /* Forces content box to match thumbnail height for alignment */
+        min-height: 250px; 
         box-sizing: border-box;
     }
 
-    .post-meta { font-weight: bold; color: #888; text-transform: uppercase; font-size: 0.75rem; letter-spacing: 1px; margin-bottom: 8px; }
+    /* Stacked Meta Data CSS */
+    .post-meta { display: flex; flex-direction: column; margin-bottom: 12px; }
+    .meta-line-primary { font-weight: bold; color: #888; text-transform: uppercase; font-size: 0.75rem; letter-spacing: 1px; }
+    .meta-line-secondary { font-weight: 600; color: #aaa; text-transform: uppercase; font-size: 0.7rem; letter-spacing: 1px; margin-top: 4px; }
+
     .post-content h2 { font-size: 1.5rem; margin: 0 0 10px 0; letter-spacing: -0.5px; color: #121212; }
     .post-preview p { font-size: 1rem; line-height: 1.6; color: #555; margin: 0; }
     
-    /* Space *above* the close button when expanded */
     .post-full { 
         display: none; 
         font-size: 1rem; 
         line-height: 1.6; 
         color: #333; 
         margin-top: 10px; 
-        padding-bottom: 30px; /* Gives the text and gallery breathing room from the close button */
+        padding-bottom: 30px; 
     }
     
-    /* 3. The Auto-Generated Image Grid (Below text) */
+    /* 3. The Auto-Generated Image Grid */
     .post-image-grid {
         display: grid;
         grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
         gap: 15px;
         margin-top: 30px;
-        border-top: 1px solid #eee;
         padding-top: 25px;
     }
-    .post-image-grid img {
+    
+    /* Strict border-removal for gallery images */
+    .post-image-grid img, .post-full img {
         width: 100%;
         height: 180px;
         object-fit: cover;
         cursor: pointer;
         border-radius: 2px;
+        border: none !important;
+        outline: none !important;
+        box-shadow: none !important;
+        background: transparent !important;
         transition: opacity 0.2s;
     }
     .post-image-grid img:hover { opacity: 0.8; }
 
-    /* 4. The Subdued, Bottom-Right Toggle Link */
+    /* 4. The Subdued Toggle Link */
     .expand-toggle {
         background: none; border: none; padding: 0; 
         font-size: 0.75rem; 
@@ -93,16 +99,15 @@ layout: default
         text-transform: uppercase; 
         letter-spacing: 1px; 
         cursor: pointer; 
-        align-self: flex-end; /* Pins it right */
-        margin-top: auto;     /* Pins it bottom */
+        align-self: flex-end; 
+        margin-top: auto;      
         transition: color 0.2s;
     }
     .expand-toggle:hover { color: #121212; }
 
-    /* Reverts layout to stacked column when expanded */
     .post-card.expanded { flex-direction: column; }
 
-    /* 5. LIGHTBOX CSS (Gallery Mode) */
+    /* 5. LIGHTBOX CSS */
     .lightbox-overlay { 
         display: none; position: fixed; z-index: 9999; left: 0; top: 0; 
         width: 100%; height: 100%; background-color: rgba(18,18,18,0.95); 
@@ -110,8 +115,13 @@ layout: default
     }
     .lightbox-overlay.active { display: flex; }
     
-    /* White border removed for a cleaner, immersive look */
-    #lightbox-img { max-width: 90%; max-height: 80vh; border: none; box-shadow: 0 4px 40px rgba(0,0,0,0.8); }
+    /* Strict border-removal for the lightbox */
+    #lightbox-img { 
+        max-width: 90%; max-height: 80vh; 
+        border: none !important; 
+        outline: none !important;
+        box-shadow: 0 4px 40px rgba(0,0,0,0.8) !important; 
+    }
     
     .close-lightbox { position: absolute; top: 20px; right: 30px; color: white; font-size: 40px; font-weight: bold; cursor: pointer; opacity: 0.7; transition: opacity 0.2s; }
     .close-lightbox:hover { opacity: 1; }
@@ -174,10 +184,8 @@ layout: default
 
         <div class="post-content">
             <div class="post-meta">
-                {{ post.date | date: "%b %d" }} &nbsp;&bull;&nbsp; 
-                {{ post.location }} &nbsp;&bull;&nbsp; 
-                {{ post.ride_miles | default: 0 | round: 1 }} MI &nbsp;&bull;&nbsp; 
-                {{ post.ride_elevation | default: 0 | round }} FT GAIN
+                <div class="meta-line-primary">{{ post.date | date: "%b %d" }} &nbsp;&bull;&nbsp; {{ post.location }}</div>
+                <div class="meta-line-secondary">{{ post.ride_miles | default: 0 | round: 1 }} MI &nbsp;&bull;&nbsp; {{ post.ride_elevation_formatted | default: 0 }} FT</div>
             </div>
             <h2>{{ post.title }}</h2>
             
@@ -206,7 +214,6 @@ layout: default
 <script>
     document.addEventListener("DOMContentLoaded", function() {
         
-        // 1. Find all expand buttons and attach a safe event listener
         const expandButtons = document.querySelectorAll('.expand-toggle');
         
         expandButtons.forEach(btn => {
@@ -244,17 +251,15 @@ layout: default
                             newImg.src = img.src;
                             newImg.className = 'lightbox-trigger';
                             galleryContainer.appendChild(newImg);
-                            img.remove(); // Removes raw image from text
+                            img.remove(); 
                         });
                         
-                        // Safely remove the "Today's Gallery" text if it exists
                         const headers = full.querySelectorAll('h3');
                         headers.forEach(h => { if(h.innerText.includes('Gallery')) h.remove(); });
                         
                         full.appendChild(galleryContainer);
                         card.dataset.galleryProcessed = "true";
                         
-                        // Re-bind Lightbox events for the new images
                         setupLightboxEvents();
                     }
                 } 
@@ -269,23 +274,19 @@ layout: default
             });
         });
 
-        // 2. Lightbox Functionality
+        // Lightbox Functionality
         let currentGallery = [];
         let currentIndex = 0;
 
         function setupLightboxEvents() {
             const triggers = document.querySelectorAll('.lightbox-trigger');
             triggers.forEach((trigger) => {
-                // Ensure we don't attach multiple click events to the same image
                 trigger.onclick = null; 
                 trigger.onclick = function() {
-                    // Find ONLY the images inside the specific card that was clicked
                     const parentCard = this.closest('.post-card');
                     const cardImages = parentCard.querySelectorAll('.lightbox-trigger');
                     
                     currentGallery = Array.from(cardImages).map(img => img.src);
-                    
-                    // Find which index we just clicked
                     currentIndex = currentGallery.indexOf(this.src);
                     openLightbox();
                 };
