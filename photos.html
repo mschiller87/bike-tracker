@@ -56,7 +56,9 @@ title: Photo Gallery
         max-height: 85vh;
         object-fit: contain;
         box-shadow: 0 0 30px rgba(0,0,0,0.5);
-        border: 2px solid #333;
+        /* Grey border removed for a cleaner look */
+        border: none !important;
+        outline: none !important;
     }
 
     /* Lightbox Controls */
@@ -92,8 +94,9 @@ title: Photo Gallery
 
 <div class="gallery-container">
     <div class="photo-grid" id="photo-grid">
+        {% assign reversed_files = site.static_files | reverse %}
         {% assign image_index = 0 %}
-        {% for file in site.static_files %}
+        {% for file in reversed_files %}
             {% if file.extname == '.jpg' or file.extname == '.jpeg' or file.extname == '.JPG' %}
                 <img src="{{ site.baseurl }}{{ file.path }}" class="photo-item" onclick="openLightbox({{ image_index }})" alt="Gallery Image">
                 {% assign image_index = image_index | plus: 1 %}
@@ -110,9 +113,10 @@ title: Photo Gallery
 </div>
 
 <script>
-    // Build an array of all the image URLs using Liquid
+    // Build an array of all the image URLs using Liquid in reverse order to match the grid
     const images = [
-        {% for file in site.static_files %}
+        {% assign reversed_files = site.static_files | reverse %}
+        {% for file in reversed_files %}
             {% if file.extname == '.jpg' or file.extname == '.jpeg' or file.extname == '.JPG' %}
                 "{{ site.baseurl }}{{ file.path }}",
             {% endif %}
