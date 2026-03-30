@@ -77,8 +77,6 @@ for ride in trip_rides:
             "geometry": {"type": "LineString", "coordinates": geojson_coords}
         })
 
-    # THE CACHE CHECK
-    # Because we added the formatted comma variable, it will trigger an auto-update of all old posts!
     is_cached = False
     if not FORCE_REBUILD and os.path.exists(filename):
         with open(filename, 'r', encoding='utf-8') as f:
@@ -134,7 +132,6 @@ for ride in trip_rides:
     primary_image_url = ""
     gallery_images = []
     
-    # 1. Grab photos and determine the primary
     for idx, photo in enumerate(photos_data):
         img_url = list(photo['urls'].values())[-1] 
         img_filename = f"{act_id}_{idx}.jpg"
@@ -148,8 +145,7 @@ for ride in trip_rides:
         else:
             gallery_images.append(repo_image_link)
 
-    # 2. Reverse the gallery list so the newest snaps appear first!
-    gallery_images.reverse()
+    # Reverted back to chronological order (oldest to newest for the day)!
     gallery_images_markdown = ""
     for link in gallery_images:
         gallery_images_markdown += f"\n![Gallery Image]({link})\n"
@@ -163,10 +159,7 @@ for ride in trip_rides:
             f.write(f'image: "{primary_image_url}"\n')
         f.write(f"total_miles: {int(total_miles)}\n")
         f.write(f"ride_elevation: {ride_elevation}\n")
-        
-        # This formatting string turns 4500 into "4,500" cleanly
         f.write(f"ride_elevation_formatted: \"{int(ride_elevation):,}\"\n")
-        
         f.write(f"ride_moving_time: {ride_moving_time}\n")
         f.write(f"ride_calories: {ride_cals}\n")
         f.write(f"ride_miles: {round(ride_miles, 1)}\n")
