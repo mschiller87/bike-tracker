@@ -10,10 +10,8 @@ CLIENT_ID = os.environ['STRAVA_CLIENT_ID']
 CLIENT_SECRET = os.environ['STRAVA_CLIENT_SECRET']
 REFRESH_TOKEN = os.environ['STRAVA_REFRESH_TOKEN']
 
-# Check if the GitHub Action checkbox was clicked!
 FORCE_REBUILD = os.environ.get('FORCE_REBUILD', 'false').lower() == 'true'
-
-TRIP_START_DATE = "2026-03-01" 
+TRIP_START_DATE = "2026-03-12" 
 BASE_URL = "https://mschiller87.github.io/bike-tracker"
 
 print("Authenticating with Strava...")
@@ -42,7 +40,6 @@ trip_rides = [
 trip_rides.sort(key=lambda x: x['start_date_local'])
 
 # --- 3. THE SMART FOLDER PROTOCOL ---
-# Only wipe the folders if the user explicitly checked the box!
 if FORCE_REBUILD:
     print("⚠️ FORCE REBUILD TRIGGERED: Wiping old posts...")
     if os.path.exists('_posts'):
@@ -52,7 +49,6 @@ os.makedirs('_posts', exist_ok=True)
 os.makedirs('images', exist_ok=True)
 os.makedirs('_data', exist_ok=True)
 
-# Automated Stat Trackers!
 total_miles = 0
 total_elevation_ft = 0
 total_moving_seconds = 0
@@ -67,9 +63,6 @@ for ride in trip_rides:
     title = ride['name'].replace('"', "'") 
     filename = f"_posts/{date_str}-{act_id}.md"
     
-    # -------------------------------------------------------------
-    # FAST MATH & MAPS (We can do this without any extra API calls!)
-    # -------------------------------------------------------------
     ride_miles = ride['distance'] * 0.000621371
     total_miles += ride_miles
     if ride_miles > longest_day_miles: longest_day_miles = ride_miles
@@ -84,29 +77,23 @@ for ride in trip_rides:
             "geometry": {"type": "LineString", "coordinates": geojson_coords}
         })
 
-    # -------------------------------------------------------------
-    # THE CACHE CHECK (Is this ride already saved?)
-    # -------------------------------------------------------------
+    # THE CACHE CHECK
+    # We now check for 'ride_miles:' to force old posts to update to our new schema!
     is_cached = False
     if not FORCE_REBUILD and os.path.exists(filename):
         with open(filename, 'r', encoding='utf-8') as f:
             content = f.read()
-            # If our new variables exist in the file, it's safe to skip!
-            if 'ride_calories:' in content:
+            if 'ride_miles:' in content: 
                 is_cached = True
                 for line in content.split('\n'):
                     if line.startswith('ride_elevation:'): total_elevation_ft += float(line.split(':')[1].strip())
                     if line.startswith('ride_moving_time:'): total_moving_seconds += int(line.split(':')[1].strip())
                     if line.startswith('ride_calories:'): total_calories += int(line.split(':')[1].strip())
                 print(f"⏩ CACHED: Skipping API calls for {title}")
-                continue # Jumps to the very next ride!
+                continue 
 
-    # -------------------------------------------------------------
-    # IF NOT CACHED -> DO THE HEAVY LIFTING API CALLS
-    # -------------------------------------------------------------
     print(f"📥 NEW RIDE: Downloading details for {title}...")
     
-    # 1. Reverse Geocoding
     location_str = "On the Road" 
     if geojson_coords:
         end_lon, end_lat = geojson_coords[-1]
@@ -121,7 +108,6 @@ for ride in trip_rides:
         except Exception as e:
             print(f"Could not get location for {title}: {e}")
 
-    # 2. Deep Strava Details
     detail_url = f"https://www.strava.com/api/v3/activities/{act_id}"
     details = requests.get(detail_url, headers=headers).json()
     
@@ -134,8 +120,16 @@ for ride in trip_rides:
     total_calories += ride_cals
     
     description = details.get('description') or "No journal entry today... just pedaling!"
+    
+    # --- STRIP AND COUNT EMOJIS ---
+    description = description.replace('⛺️', '⛺').replace('🛏️', '🛏')
+    ride_hot_dogs = description.count('🌭')
+    ride_tents = description.count('⛺')
+    ride_beds = description.count('🛏')
+    
+    # Remove them completely from the text!
+    description = description.replace('🌭', '').replace('⛺', '').replace('🛏', '').strip()
         
-    # 3. Photos
     photos_url = f"https://www.strava.com/api/v3/activities/{act_id}/photos?size=5000"
     photos_data = requests.get(photos_url, headers=headers).json()
     
@@ -145,19 +139,16 @@ for ride in trip_rides:
     for idx, photo in enumerate(photos_data):
         img_url = list(photo['urls'].values())[-1] 
         img_filename = f"{act_id}_{idx}.jpg"
-        
         img_data = requests.get(img_url).content
         with open(f"images/{img_filename}", 'wb') as handler:
             handler.write(img_data)
-            
         repo_image_link = f"{BASE_URL}/images/{img_filename}"
-        
         if photo.get('default_photo') or idx == 0:
             primary_image_url = repo_image_link
         else:
             gallery_images_markdown += f"\n![Gallery Image]({repo_image_link})\n"
 
-    # 4. Write Markdown File (Now saving our cached math variables!)
+    # Write Markdown File (Saving the emoji counts as invisible front-matter!)
     with open(filename, 'w', encoding='utf-8') as f:
         f.write("---\n")
         f.write("layout: default\n")
@@ -166,10 +157,13 @@ for ride in trip_rides:
         if primary_image_url:
             f.write(f'image: "{primary_image_url}"\n')
         f.write(f"total_miles: {int(total_miles)}\n")
-        # Hidden variables for the cache to read tomorrow!
         f.write(f"ride_elevation: {ride_elevation}\n")
         f.write(f"ride_moving_time: {ride_moving_time}\n")
         f.write(f"ride_calories: {ride_cals}\n")
+        f.write(f"ride_miles: {round(ride_miles, 1)}\n")
+        f.write(f"ride_hot_dogs: {ride_hot_dogs}\n")
+        f.write(f"ride_tents: {ride_tents}\n")
+        f.write(f"ride_beds: {ride_beds}\n")
         f.write("---\n\n")
         f.write(f"{description}\n")
         
@@ -177,7 +171,6 @@ for ride in trip_rides:
             f.write("\n### Today's Gallery\n")
             f.write(gallery_images_markdown)
 
-# --- 6. SAVE AUTOMATED MAP & STAT DATA ---
 with open('strava_rides.geojson', 'w') as f:
     json.dump({"type": "FeatureCollection", "features": geojson_features}, f)
 
@@ -187,10 +180,8 @@ with open('_data/automated_stats.yml', 'w') as f:
     f.write(f"longest_day_miles: {int(longest_day_miles)}\n")
     f.write(f"total_calories: {int(total_calories)}\n")
 
-print("SUCCESS: Blog synced, stats calculated, and map updated!")
-
 # ==========================================
-# EMOJI FUN STATS AUTOMATION (Runs lightning fast over local files)
+# EMOJI FUN STATS AUTOMATION
 # ==========================================
 def update_fun_stats():
     import os
@@ -200,19 +191,18 @@ def update_fun_stats():
     if os.path.exists(posts_dir):
         for filename in os.listdir(posts_dir):
             if filename.endswith(".md"):
+                # We now just read the invisible variables from the front matter!
                 with open(os.path.join(posts_dir, filename), 'r', encoding='utf-8') as f:
-                    content = f.read()
-                    content = content.replace('⛺️', '⛺').replace('🛏️', '🛏')
-                    total_hot_dogs += content.count('🌭')
-                    total_tents += content.count('⛺')
-                    total_beds += content.count('🛏')
+                    for line in f:
+                        if line.startswith('ride_hot_dogs:'): total_hot_dogs += int(line.split(':')[1].strip())
+                        if line.startswith('ride_tents:'): total_tents += int(line.split(':')[1].strip())
+                        if line.startswith('ride_beds:'): total_beds += int(line.split(':')[1].strip())
                         
     os.makedirs('_data', exist_ok=True)
     with open('_data/fun_stats.yml', 'w', encoding='utf-8') as f:
         f.write(f"hot_dogs: {total_hot_dogs}\n")
         f.write(f"nights_tent: {total_tents}\n")
         f.write(f"nights_bed: {total_beds}\n")
-    
     print(f"✅ Fun Stats Updated: {total_hot_dogs} Hot Dogs, {total_tents} Tents, {total_beds} Beds")
 
 update_fun_stats()
