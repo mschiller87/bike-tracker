@@ -173,7 +173,12 @@ layout: default
         {% endif %}
 
         <div class="post-content">
-            <div class="post-meta">{{ post.date | date: "%b %d" }} &nbsp;&bull;&nbsp; {{ post.location }}</div>
+            <div class="post-meta">
+                {{ post.date | date: "%b %d" }} &nbsp;&bull;&nbsp; 
+                {{ post.location }} &nbsp;&bull;&nbsp; 
+                {{ post.ride_miles | default: 0 | round: 1 }} MI &nbsp;&bull;&nbsp; 
+                {{ post.ride_elevation | default: 0 | round }} FT GAIN
+            </div>
             <h2>{{ post.title }}</h2>
             
             <div class="post-preview">
