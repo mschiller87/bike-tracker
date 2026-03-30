@@ -11,7 +11,7 @@ CLIENT_SECRET = os.environ['STRAVA_CLIENT_SECRET']
 REFRESH_TOKEN = os.environ['STRAVA_REFRESH_TOKEN']
 
 FORCE_REBUILD = os.environ.get('FORCE_REBUILD', 'false').lower() == 'true'
-TRIP_START_DATE = "2026-03-12" 
+TRIP_START_DATE = "2026-03-01" 
 BASE_URL = "https://mschiller87.github.io/bike-tracker"
 
 print("Authenticating with Strava...")
@@ -78,12 +78,12 @@ for ride in trip_rides:
         })
 
     # THE CACHE CHECK
-    # We now check for 'ride_miles:' to force old posts to update to our new schema!
+    # Because we added the formatted comma variable, it will trigger an auto-update of all old posts!
     is_cached = False
     if not FORCE_REBUILD and os.path.exists(filename):
         with open(filename, 'r', encoding='utf-8') as f:
             content = f.read()
-            if 'ride_miles:' in content: 
+            if 'ride_miles:' in content and 'ride_elevation_formatted:' in content: 
                 is_cached = True
                 for line in content.split('\n'):
                     if line.startswith('ride_elevation:'): total_elevation_ft += float(line.split(':')[1].strip())
@@ -121,21 +121,20 @@ for ride in trip_rides:
     
     description = details.get('description') or "No journal entry today... just pedaling!"
     
-    # --- STRIP AND COUNT EMOJIS ---
     description = description.replace('⛺️', '⛺').replace('🛏️', '🛏')
     ride_hot_dogs = description.count('🌭')
     ride_tents = description.count('⛺')
     ride_beds = description.count('🛏')
     
-    # Remove them completely from the text!
     description = description.replace('🌭', '').replace('⛺', '').replace('🛏', '').strip()
         
     photos_url = f"https://www.strava.com/api/v3/activities/{act_id}/photos?size=5000"
     photos_data = requests.get(photos_url, headers=headers).json()
     
     primary_image_url = ""
-    gallery_images_markdown = ""
+    gallery_images = []
     
+    # 1. Grab photos and determine the primary
     for idx, photo in enumerate(photos_data):
         img_url = list(photo['urls'].values())[-1] 
         img_filename = f"{act_id}_{idx}.jpg"
@@ -143,12 +142,18 @@ for ride in trip_rides:
         with open(f"images/{img_filename}", 'wb') as handler:
             handler.write(img_data)
         repo_image_link = f"{BASE_URL}/images/{img_filename}"
-        if photo.get('default_photo') or idx == 0:
+        
+        if photo.get('default_photo') or (not primary_image_url and idx == 0):
             primary_image_url = repo_image_link
         else:
-            gallery_images_markdown += f"\n![Gallery Image]({repo_image_link})\n"
+            gallery_images.append(repo_image_link)
 
-    # Write Markdown File (Saving the emoji counts as invisible front-matter!)
+    # 2. Reverse the gallery list so the newest snaps appear first!
+    gallery_images.reverse()
+    gallery_images_markdown = ""
+    for link in gallery_images:
+        gallery_images_markdown += f"\n![Gallery Image]({link})\n"
+
     with open(filename, 'w', encoding='utf-8') as f:
         f.write("---\n")
         f.write("layout: default\n")
@@ -158,6 +163,10 @@ for ride in trip_rides:
             f.write(f'image: "{primary_image_url}"\n')
         f.write(f"total_miles: {int(total_miles)}\n")
         f.write(f"ride_elevation: {ride_elevation}\n")
+        
+        # This formatting string turns 4500 into "4,500" cleanly
+        f.write(f"ride_elevation_formatted: \"{int(ride_elevation):,}\"\n")
+        
         f.write(f"ride_moving_time: {ride_moving_time}\n")
         f.write(f"ride_calories: {ride_cals}\n")
         f.write(f"ride_miles: {round(ride_miles, 1)}\n")
@@ -180,9 +189,6 @@ with open('_data/automated_stats.yml', 'w') as f:
     f.write(f"longest_day_miles: {int(longest_day_miles)}\n")
     f.write(f"total_calories: {int(total_calories)}\n")
 
-# ==========================================
-# EMOJI FUN STATS AUTOMATION
-# ==========================================
 def update_fun_stats():
     import os
     posts_dir = '_posts'
@@ -191,7 +197,6 @@ def update_fun_stats():
     if os.path.exists(posts_dir):
         for filename in os.listdir(posts_dir):
             if filename.endswith(".md"):
-                # We now just read the invisible variables from the front matter!
                 with open(os.path.join(posts_dir, filename), 'r', encoding='utf-8') as f:
                     for line in f:
                         if line.startswith('ride_hot_dogs:'): total_hot_dogs += int(line.split(':')[1].strip())
