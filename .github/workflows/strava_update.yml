@@ -5,7 +5,13 @@ on:
     # This tells the robot to run automatically every day at 8:00 AM UTC (Midnight PST / 3:00 AM EST)
     - cron: '0 8 * * *'
   # This line adds a "Run workflow" button so you can trigger it manually whenever you want!
-  workflow_dispatch: 
+  workflow_dispatch:
+    inputs:
+      force_rebuild:
+        description: 'Force Full Rebuild (Wipe old posts & re-download)'
+        required: false
+        type: boolean
+        default: false 
 
 jobs:
   update-map:
@@ -25,11 +31,12 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
-      - name: Run Strava update script
+      - name: Run Python Script
         env:
           STRAVA_CLIENT_ID: ${{ secrets.STRAVA_CLIENT_ID }}
           STRAVA_CLIENT_SECRET: ${{ secrets.STRAVA_CLIENT_SECRET }}
           STRAVA_REFRESH_TOKEN: ${{ secrets.STRAVA_REFRESH_TOKEN }}
+          FORCE_REBUILD: ${{ inputs.force_rebuild }}
         run: python update_strava.py
 
       - name: Commit and push changes
