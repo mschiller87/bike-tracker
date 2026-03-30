@@ -75,13 +75,16 @@ for ride in trip_rides:
         geojson_coords = [[lon, lat] for lat, lon in coordinates] 
         end_lat, end_lon = coordinates[-1]
         
-        nom_url = f"https://nominatim.openstreetmap.org/reverse?lat={end_lat}&lon={end_lon}&format=jsonv2"
+        # --- THE FIX: NEW RELIABLE REVERSE GEOCODING API ---
+        geo_url = f"https://api.bigdatacloud.net/data/reverse-geocode-client?latitude={end_lat}&longitude={end_lon}&localityLanguage=en"
         try:
-            time.sleep(1) 
-            geo_data = requests.get(nom_url, headers={'User-Agent': 'TranscontinentalBikeTracker/1.0'}).json()
-            address = geo_data.get('address', {})
-            city = address.get('city') or address.get('town') or address.get('village') or address.get('hamlet') or address.get('county')
-            state = address.get('state')
+            time.sleep(0.5) 
+            geo_data = requests.get(geo_url).json()
+            
+            # BigDataCloud categorizes things much cleaner
+            city = geo_data.get('city') or geo_data.get('locality')
+            state = geo_data.get('principalSubdivision')
+            
             if city and state:
                 location_str = f"{city}, {state}"
             elif city:
