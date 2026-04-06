@@ -190,7 +190,8 @@ layout: default
             <h2>{{ post.title }}</h2>
             
             <div class="post-preview">
-                <p>{{ post.content | strip_html | truncatewords: 35 }}</p>
+                {% assign clean_preview = post.content | split: "### Today's Gallery" | first %}
+                <p>{{ clean_preview | strip_html | truncatewords: 35 }}</p>
             </div>
 
             <div class="post-full">
