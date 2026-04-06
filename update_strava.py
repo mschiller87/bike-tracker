@@ -3,7 +3,6 @@ import requests
 import json
 import polyline
 import time
-import shutil 
 
 # --- 1. SETTINGS & AUTHENTICATION ---
 CLIENT_ID = os.environ['STRAVA_CLIENT_ID']
@@ -12,6 +11,19 @@ REFRESH_TOKEN = os.environ['STRAVA_REFRESH_TOKEN']
 
 TRIP_START_DATE = "2026-03-01" 
 BASE_URL = "https://mschiller87.github.io/bike-tracker"
+
+def get_ride_weather(lat, lon, date_str):
+    """Fetches historical max/min temps for a specific coordinate and date."""
+    url = f"https://api.open-meteo.com/v1/forecast?latitude={lat}&longitude={lon}&start_date={date_str}&end_date={date_str}&daily=temperature_2m_max,temperature_2m_min&temperature_unit=fahrenheit&timezone=auto"
+    try:
+        response = requests.get(url)
+        data = response.json()
+        max_temp = round(data['daily']['temperature_2m_max'][0])
+        min_temp = round(data['daily']['temperature_2m_min'][0])
+        return max_temp, min_temp
+    except Exception as e:
+        print(f"⚠️ Weather fetch failed for {date_str}: {e}")
+        return "None", "None"
 
 print("Authenticating with Strava...")
 auth_url = "https://www.strava.com/oauth/token"
@@ -38,8 +50,7 @@ trip_rides = [
 ]
 trip_rides.sort(key=lambda x: x['start_date_local'])
 
-# --- 3. THE SMART FOLDER PROTOCOL (Road-Safe Version) ---
-# The nuclear folder wipe has been permanently removed!
+# --- 3. THE SMART FOLDER PROTOCOL ---
 os.makedirs('_posts', exist_ok=True)
 os.makedirs('images', exist_ok=True)
 os.makedirs('_data', exist_ok=True)
@@ -77,20 +88,39 @@ for ride in trip_rides:
     if os.path.exists(filename):
         with open(filename, 'r', encoding='utf-8') as f:
             content = f.read()
+            
             if 'ride_miles:' in content and 'ride_elevation_formatted:' in content: 
+                
+                # INGENIOUS SURGICAL UPDATE: If weather is missing, fetch ONLY weather and inject it!
+                if 'ride_max_temp:' not in content:
+                    print(f"🌤️ CACHED BUT MISSING WEATHER: Fetching weather for {title}...")
+                    end_lon, end_lat = geojson_coords[-1] if geojson_coords else (None, None)
+                    if end_lat and end_lon:
+                        max_t, min_t = get_ride_weather(end_lat, end_lon, date_str)
+                        content = content.replace('---\n\n', f"ride_max_temp: {max_t}\nride_min_temp: {min_t}\n---\n\n")
+                        with open(filename, 'w', encoding='utf-8') as f_write:
+                            f_write.write(content)
+
                 is_cached = True
                 for line in content.split('\n'):
                     if line.startswith('ride_elevation:'): total_elevation_ft += float(line.split(':')[1].strip())
                     if line.startswith('ride_moving_time:'): total_moving_seconds += int(float(line.split(':')[1].strip()))
                     if line.startswith('ride_calories:'): total_calories += int(float(line.split(':')[1].strip()))
-                print(f"⏩ CACHED: Skipping API calls for {title}")
+                print(f"⏩ CACHED: Skipping Strava API calls for {title}")
                 continue 
 
     print(f"📥 NEW RIDE: Downloading details for {title}...")
     
     location_str = "On the Road" 
+    max_t, min_t = "None", "None"
+    
     if geojson_coords:
         end_lon, end_lat = geojson_coords[-1]
+        
+        # Get Weather
+        max_t, min_t = get_ride_weather(end_lat, end_lon, date_str)
+        
+        # Get City
         geo_url = f"https://api.bigdatacloud.net/data/reverse-geocode-client?latitude={end_lat}&longitude={end_lon}&localityLanguage=en"
         try:
             time.sleep(0.5) 
@@ -161,6 +191,8 @@ for ride in trip_rides:
         f.write(f"ride_hot_dogs: {ride_hot_dogs}\n")
         f.write(f"ride_tents: {ride_tents}\n")
         f.write(f"ride_beds: {ride_beds}\n")
+        f.write(f"ride_max_temp: {max_t}\n")
+        f.write(f"ride_min_temp: {min_t}\n")
         f.write("---\n\n")
         f.write(f"{description}\n")
         
@@ -181,6 +213,8 @@ def update_fun_stats():
     import os
     posts_dir = '_posts'
     total_hot_dogs, total_tents, total_beds = 0, 0, 0
+    overall_hottest = -999
+    overall_coldest = 999
     
     if os.path.exists(posts_dir):
         for filename in os.listdir(posts_dir):
@@ -191,11 +225,26 @@ def update_fun_stats():
                         if line.startswith('ride_tents:'): total_tents += int(float(line.split(':')[1].strip()))
                         if line.startswith('ride_beds:'): total_beds += int(float(line.split(':')[1].strip()))
                         
+                        if line.startswith('ride_max_temp:'):
+                            val = line.split(':')[1].strip()
+                            if val != 'None':
+                                overall_hottest = max(overall_hottest, int(float(val)))
+                        if line.startswith('ride_min_temp:'):
+                            val = line.split(':')[1].strip()
+                            if val != 'None':
+                                overall_coldest = min(overall_coldest, int(float(val)))
+                        
+    if overall_hottest == -999: overall_hottest = 0
+    if overall_coldest == 999: overall_coldest = 0
+                        
     os.makedirs('_data', exist_ok=True)
     with open('_data/fun_stats.yml', 'w', encoding='utf-8') as f:
         f.write(f"hot_dogs: {total_hot_dogs}\n")
         f.write(f"nights_tent: {total_tents}\n")
         f.write(f"nights_bed: {total_beds}\n")
-    print(f"✅ Fun Stats Updated: {total_hot_dogs} Hot Dogs, {total_tents} Tents, {total_beds} Beds")
+        f.write(f"hottest_day: {overall_hottest}\n")
+        f.write(f"coldest_night: {overall_coldest}\n")
+        
+    print(f"✅ Fun Stats Updated! Hottest: {overall_hottest}°F | Coldest: {overall_coldest}°F")
 
 update_fun_stats()
