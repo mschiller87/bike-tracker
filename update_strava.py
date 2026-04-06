@@ -10,7 +10,6 @@ CLIENT_ID = os.environ['STRAVA_CLIENT_ID']
 CLIENT_SECRET = os.environ['STRAVA_CLIENT_SECRET']
 REFRESH_TOKEN = os.environ['STRAVA_REFRESH_TOKEN']
 
-FORCE_REBUILD = os.environ.get('FORCE_REBUILD', 'false').lower() == 'true'
 TRIP_START_DATE = "2026-03-01" 
 BASE_URL = "https://mschiller87.github.io/bike-tracker"
 
@@ -39,12 +38,8 @@ trip_rides = [
 ]
 trip_rides.sort(key=lambda x: x['start_date_local'])
 
-# --- 3. THE SMART FOLDER PROTOCOL ---
-if FORCE_REBUILD:
-    print("⚠️ FORCE REBUILD TRIGGERED: Wiping old posts...")
-    if os.path.exists('_posts'):
-        shutil.rmtree('_posts')
-
+# --- 3. THE SMART FOLDER PROTOCOL (Road-Safe Version) ---
+# The nuclear folder wipe has been permanently removed!
 os.makedirs('_posts', exist_ok=True)
 os.makedirs('images', exist_ok=True)
 os.makedirs('_data', exist_ok=True)
@@ -79,14 +74,13 @@ for ride in trip_rides:
 
     # THE CACHE CHECK
     is_cached = False
-    if not FORCE_REBUILD and os.path.exists(filename):
+    if os.path.exists(filename):
         with open(filename, 'r', encoding='utf-8') as f:
             content = f.read()
             if 'ride_miles:' in content and 'ride_elevation_formatted:' in content: 
                 is_cached = True
                 for line in content.split('\n'):
                     if line.startswith('ride_elevation:'): total_elevation_ft += float(line.split(':')[1].strip())
-                    # FIXED: Wrapped in float() first to handle unexpected decimals
                     if line.startswith('ride_moving_time:'): total_moving_seconds += int(float(line.split(':')[1].strip()))
                     if line.startswith('ride_calories:'): total_calories += int(float(line.split(':')[1].strip()))
                 print(f"⏩ CACHED: Skipping API calls for {title}")
@@ -193,7 +187,6 @@ def update_fun_stats():
             if filename.endswith(".md"):
                 with open(os.path.join(posts_dir, filename), 'r', encoding='utf-8') as f:
                     for line in f:
-                        # FIXED: Wrapped in float() here too, just to be extremely safe!
                         if line.startswith('ride_hot_dogs:'): total_hot_dogs += int(float(line.split(':')[1].strip()))
                         if line.startswith('ride_tents:'): total_tents += int(float(line.split(':')[1].strip()))
                         if line.startswith('ride_beds:'): total_beds += int(float(line.split(':')[1].strip()))
