@@ -7,6 +7,10 @@ on:
   # Adds a "Run workflow" button for manual triggers
   workflow_dispatch:
 
+# ADDED: Explicitly gives the GitHub Actions bot permission to push the generated files back to your repository.
+permissions:
+  contents: write
+
 jobs:
   update-map:
     runs-on: ubuntu-latest
@@ -36,6 +40,7 @@ jobs:
         run: |
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
-          git add .
+          # CHANGED: 'git add -A' ensures any deleted old posts and all newly generated posts are correctly staged.
+          git add -A
           git commit -m "Automated Strava sync" || echo "No changes to commit"
           git push
