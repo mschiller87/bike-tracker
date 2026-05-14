@@ -178,7 +178,7 @@ layout: default
         
         {% if post.image %}
         <div class="post-thumbnail">
-            <img src="{{ post.image }}" alt="Thumbnail for {{ post.title }}">
+            <img src="{{ post.image }}" alt="Thumbnail for {{ post.title }}" loading="lazy">
         </div>
         {% endif %}
 
@@ -241,7 +241,7 @@ layout: default
                         if (thumbnail) {
                             const primaryImg = thumbnail.querySelector('img');
                             if (primaryImg) {
-                                galleryContainer.innerHTML += `<img src="${primaryImg.src}" class="lightbox-trigger">`;
+                                galleryContainer.innerHTML += `<img src="${primaryImg.src}" class="lightbox-trigger" loading="lazy">`;
                             }
                         }
                         
@@ -251,6 +251,7 @@ layout: default
                             const newImg = document.createElement('img');
                             newImg.src = img.src;
                             newImg.className = 'lightbox-trigger';
+                            newImg.loading = 'lazy';
                             galleryContainer.appendChild(newImg);
                             img.remove(); 
                         });
