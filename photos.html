@@ -99,9 +99,9 @@ title: Photo Gallery
                 {% assign image_index = image_index | plus: 1 %}
             {% endif %}
 
-            {% assign content_images = post.content | split: '![Gallery Image](' %}
+            {% assign content_images = post.content | split: '<img src="' %}
             {% for chunk in content_images offset: 1 %}
-                {% assign img_url = chunk | split: ')' | first %}
+                {% assign img_url = chunk | split: '"' | first %}
                 <img src="{{ img_url }}" class="photo-item" onclick="openLightbox({{ image_index }})" alt="Gallery Image from {{ post.date | date: '%b %d' }}" loading="lazy">
                 {% assign image_index = image_index | plus: 1 %}
             {% endfor %}
@@ -124,9 +124,9 @@ title: Photo Gallery
                 "{{ post.image }}",
             {% endif %}
             
-            {% assign content_images = post.content | split: '![Gallery Image](' %}
+            {% assign content_images = post.content | split: '<img src="' %}
             {% for chunk in content_images offset: 1 %}
-                {% assign img_url = chunk | split: ')' | first %}
+                {% assign img_url = chunk | split: '"' | first %}
                 "{{ img_url }}",
             {% endfor %}
         {% endfor %}
