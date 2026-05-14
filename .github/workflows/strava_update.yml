@@ -2,21 +2,21 @@ name: Update Strava Data
 
 on:
   schedule:
-    # This tells the robot to run automatically every day at 8:00 AM UTC (Midnight PST / 3:00 AM EST)
     - cron: '0 8 * * *'
-  # This line adds a "Run workflow" button so you can trigger it manually whenever you want!
   workflow_dispatch:
     inputs:
-      force_rebuild:
-        description: 'Force Full Rebuild (Wipe old posts & re-download)'
+      clean_wipe:
+        description: 'Check this to delete all posts/stats and rebuild from scratch'
         required: false
         type: boolean
-        default: false 
+        default: false
+
+permissions:
+  contents: write
 
 jobs:
   update-map:
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -31,19 +31,19 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
-      - name: Run Python Script
+      - name: Run Strava update script
         env:
           STRAVA_CLIENT_ID: ${{ secrets.STRAVA_CLIENT_ID }}
           STRAVA_CLIENT_SECRET: ${{ secrets.STRAVA_CLIENT_SECRET }}
           STRAVA_REFRESH_TOKEN: ${{ secrets.STRAVA_REFRESH_TOKEN }}
-          FORCE_REBUILD: ${{ inputs.force_rebuild }}
+          # This line captures the checkbox value
+          CLEAN_WIPE: ${{ github.event.inputs.clean_wipe }}
         run: python update_strava.py
 
       - name: Commit and push changes
         run: |
-          git config --local user.email "action@github.com"
-          git config --local user.name "GitHub Action"
-          # We added the _data/ folder to the packing list right here!
-          git add strava_rides.geojson _posts/ images/ _data/
-          git commit -m "Auto-update Strava rides, posts, photos, and stats" || echo "No changes to commit"
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "Automated Strava sync" || echo "No changes to commit"
           git push
