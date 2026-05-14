@@ -11,7 +11,7 @@ CLIENT_SECRET = os.environ.get('STRAVA_CLIENT_SECRET')
 REFRESH_TOKEN = os.environ.get('STRAVA_REFRESH_TOKEN')
 CLEAN_WIPE = os.environ.get('CLEAN_WIPE') == 'true' # Check for the checkbox!
 
-TRIP_START_DATE = "2026-06-01" 
+TRIP_START_DATE = "2026-05-09" 
 
 def get_ride_weather(lat, lon, date_str):
     url = f"https://api.open-meteo.com/v1/forecast?latitude={lat}&longitude={lon}&start_date={date_str}&end_date={date_str}&daily=temperature_2m_max,temperature_2m_min&temperature_unit=fahrenheit&timezone=auto"
