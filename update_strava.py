@@ -126,7 +126,8 @@ def main():
             if max_t is not None and max_t > state["overall_hottest"]: state["overall_hottest"] = max_t
             if min_t is not None and min_t < state["overall_coldest"]: state["overall_coldest"] = min_t
 
-        photos_url = f"https://www.strava.com/api/v3/activities/{act_id}/photos?size=5000"
+        # Changed size from 5000 to 600
+        photos_url = f"https://www.strava.com/api/v3/activities/{act_id}/photos?size=600"
         photos = requests.get(photos_url, headers=headers).json()
         
         primary_image_markdown = ""
@@ -135,7 +136,7 @@ def main():
         if type(photos) is list and len(photos) > 0:
             for idx, photo in enumerate(photos):
                 if photo.get('urls'):
-                    img_url = photo['urls'].get('5000')
+                    img_url = photo['urls'].get('600')
                     if idx == 0: primary_image_markdown = f"image: {img_url}"
                     else: gallery_images_markdown += f"![Gallery Image]({img_url})\n"
 
