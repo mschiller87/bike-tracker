@@ -111,7 +111,8 @@ def main():
         detail_url = f"https://www.strava.com/api/v3/activities/{act_id}"
         details = requests.get(detail_url, headers=headers).json()
         
-        state["total_elevation_ft"] += (details.get('total_elevation_gain', 0) * 3.28084)
+        ride_elevation = details.get('total_elevation_gain', 0) * 3.28084
+        state["total_elevation_ft"] += ride_elevation
         state["total_moving_seconds"] += details.get('moving_time', 0)
         state["total_calories"] += details.get('calories', 0)
         description = details.get('description') or "No journal entry today... just pedaling!"
@@ -140,7 +141,7 @@ def main():
 
         filename = f"_posts/{date_str}-{act_id}.md"
         with open(filename, 'w', encoding='utf-8') as f:
-            f.write(f"---\nlayout: post\ntitle: \"{title}\"\ndate: {date_str}\nlocation: \"{location_str}\"\ntotal_miles: {int(total_miles)}\n")
+            f.write(f"---\nlayout: post\ntitle: \"{title}\"\ndate: {date_str}\nlocation: \"{location_str}\"\ndistance: {int(ride_miles)}\nelevation: {int(ride_elevation)}\ntotal_miles: {int(total_miles)}\n")
             if primary_image_markdown: f.write(f"{primary_image_markdown}\n")
             f.write(f"---\n\n{description}\n")
             if gallery_images_markdown: f.write(f"\n### Today's Gallery\n{gallery_images_markdown}")
