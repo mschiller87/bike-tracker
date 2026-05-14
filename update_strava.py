@@ -118,8 +118,12 @@ def main():
         description = details.get('description') or "No journal entry today... just pedaling!"
 
         state["total_hot_dogs"] += description.count('🌭')
-        state["total_tents"] += description.count('⛺') + description.count('⛺️')
-        state["total_beds"] += description.count('🛏') + description.count('🛏️')
+        
+        # --- NEW SLEEP LOGIC ---
+        if '⛺' in description or '⛺️' in description:
+            state["total_tents"] += 1
+        else:
+            state["total_beds"] += 1
 
         if end_lat and end_lon:
             max_t, min_t = get_ride_weather(end_lat, end_lon, date_str)
