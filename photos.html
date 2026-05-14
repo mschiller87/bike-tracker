@@ -13,15 +13,14 @@ title: Photo Gallery
 
     .photo-grid {
         display: grid;
-        /* This line is the magic: It automatically fits as many 110px columns as possible! */
         grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
         gap: 10px;
     }
 
     .photo-item {
         width: 100%;
-        aspect-ratio: 1 / 1; /* Forces the thumbnail to be a perfect square */
-        object-fit: cover; /* Crops the image so it doesn't squish */
+        aspect-ratio: 1 / 1;
+        object-fit: cover;
         border-radius: 4px;
         cursor: pointer;
         transition: transform 0.2s ease, box-shadow 0.2s ease;
@@ -35,17 +34,16 @@ title: Photo Gallery
     }
 
     @media (min-width: 600px) {
-        /* On larger screens, make the thumbnails slightly bigger */
         .photo-grid { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 15px; }
     }
 
     /* 2. The Full-Screen Lightbox */
     #lightbox {
-        display: none; /* Hidden by default */
+        display: none; 
         position: fixed;
         top: 0; left: 0; width: 100%; height: 100%;
-        background-color: rgba(18, 18, 18, 0.95); /* MTA Black, slightly transparent */
-        z-index: 2000; /* Sits completely on top of your sticky header */
+        background-color: rgba(18, 18, 18, 0.95); 
+        z-index: 2000; 
         align-items: center;
         justify-content: center;
         flex-direction: column;
@@ -56,7 +54,6 @@ title: Photo Gallery
         max-height: 85vh;
         object-fit: contain;
         box-shadow: 0 0 30px rgba(0,0,0,0.5);
-        /* Grey border removed for a cleaner look */
         border: none !important;
         outline: none !important;
     }
@@ -74,7 +71,7 @@ title: Photo Gallery
         cursor: pointer;
         transition: background 0.2s;
     }
-    .lightbox-btn:hover { background: #FF6319; /* MTA Orange highlight! */ }
+    .lightbox-btn:hover { background: #FF6319; }
     
     #prev-btn { left: 20px; }
     #next-btn { right: 20px; }
@@ -89,18 +86,26 @@ title: Photo Gallery
         font-size: 2.5rem;
         cursor: pointer;
     }
-    #close-btn:hover { color: #EE352E; /* MTA Red highlight! */ }
+    #close-btn:hover { color: #EE352E; }
 </style>
 
 <div class="gallery-container">
     <div class="photo-grid" id="photo-grid">
-        {% assign reversed_files = site.static_files | reverse %}
         {% assign image_index = 0 %}
-        {% for file in reversed_files %}
-            {% if file.extname == '.jpg' or file.extname == '.jpeg' or file.extname == '.JPG' %}
-                <img src="{{ site.baseurl }}{{ file.path }}" class="photo-item" onclick="openLightbox({{ image_index }})" alt="Gallery Image">
+        {% for post in site.posts %}
+            
+            {% if post.image %}
+                <img src="{{ post.image }}" class="photo-item" onclick="openLightbox({{ image_index }})" alt="Gallery Image from {{ post.date | date: '%b %d' }}" loading="lazy">
                 {% assign image_index = image_index | plus: 1 %}
             {% endif %}
+
+            {% assign content_images = post.content | split: '![Gallery Image](' %}
+            {% for chunk in content_images offset: 1 %}
+                {% assign img_url = chunk | split: ')' | first %}
+                <img src="{{ img_url }}" class="photo-item" onclick="openLightbox({{ image_index }})" alt="Gallery Image from {{ post.date | date: '%b %d' }}" loading="lazy">
+                {% assign image_index = image_index | plus: 1 %}
+            {% endfor %}
+
         {% endfor %}
     </div>
 </div>
@@ -113,13 +118,17 @@ title: Photo Gallery
 </div>
 
 <script>
-    // Build an array of all the image URLs using Liquid in reverse order to match the grid
     const images = [
-        {% assign reversed_files = site.static_files | reverse %}
-        {% for file in reversed_files %}
-            {% if file.extname == '.jpg' or file.extname == '.jpeg' or file.extname == '.JPG' %}
-                "{{ site.baseurl }}{{ file.path }}",
+        {% for post in site.posts %}
+            {% if post.image %}
+                "{{ post.image }}",
             {% endif %}
+            
+            {% assign content_images = post.content | split: '![Gallery Image](' %}
+            {% for chunk in content_images offset: 1 %}
+                {% assign img_url = chunk | split: ')' | first %}
+                "{{ img_url }}",
+            {% endfor %}
         {% endfor %}
     ];
 
@@ -131,23 +140,21 @@ title: Photo Gallery
         currentIndex = index;
         lightboxImg.src = images[currentIndex];
         lightbox.style.display = 'flex';
-        document.body.style.overflow = 'hidden'; // Stop background scrolling
+        document.body.style.overflow = 'hidden'; 
     }
 
     function closeLightbox() {
         lightbox.style.display = 'none';
-        document.body.style.overflow = 'auto'; // Re-enable background scrolling
+        document.body.style.overflow = 'auto'; 
     }
 
     function changeImage(direction) {
         currentIndex += direction;
-        // Loop back to the start/end if you click past the edges
         if (currentIndex >= images.length) currentIndex = 0;
         if (currentIndex < 0) currentIndex = images.length - 1;
         lightboxImg.src = images[currentIndex];
     }
 
-    // Bonus: Let users use their keyboard arrows and Esc key!
     document.addEventListener('keydown', function(event) {
         if (lightbox.style.display === 'flex') {
             if (event.key === 'ArrowRight') changeImage(1);
