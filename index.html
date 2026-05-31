@@ -97,19 +97,19 @@ layout: default
     
     /* Updated Comment Formatting */
     .comment-line { margin-bottom: 8px; line-height: 1.4; font-size: 0.9rem; }
-    .comment-author { color: #121212; font-weight: normal; } /* Name unbolded */
-    .comment-text { color: #aaa; } /* Text matches expand toggle color */
+    .comment-author { color: #121212; font-weight: normal; } 
+    .comment-text { color: #aaa; } 
     
     .strava-comment-btn {
         display: inline-block;
         margin-top: 15px;
-        padding: 6px 14px; /* Shrunk padding */
+        padding: 6px 14px; 
         background: #fc4c02;
         color: white !important;
         text-decoration: none;
         border-radius: 4px;
-        font-weight: normal; /* Text unbolded */
-        font-size: 0.8rem; /* Smaller text size */
+        font-weight: normal; 
+        font-size: 0.8rem; 
         transition: opacity 0.2s ease;
     }
     .strava-comment-btn:hover { opacity: 0.85; }
@@ -355,6 +355,39 @@ layout: default
             const imgEl = document.getElementById('lightbox-img');
             if (imgEl && currentGallery.length > 0) {
                 imgEl.src = currentGallery[currentIndex];
+            }
+        }
+    });
+
+    // --- NEW: Smart Strava Deep Linking ---
+    document.addEventListener('click', function(e) {
+        const btn = e.target.closest('.strava-comment-btn');
+        if (btn) {
+            e.preventDefault();
+            const webUrl = btn.href;
+            
+            // Extract the Strava Activity ID from the standard web link
+            const actId = webUrl.substring(webUrl.lastIndexOf('/') + 1);
+            
+            // This is the command that forces the mobile app to open
+            const appUrl = 'strava://activities/' + actId;
+
+            const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+
+            if (isMobile) {
+                // 1. Fire the hidden command to launch the app
+                window.location.href = appUrl;
+                
+                // 2. If the user's browser is still open and visible after 1 second,
+                // it means the app failed to open (or isn't installed). So, seamlessly navigate to the website instead.
+                setTimeout(function() {
+                    if (!document.hidden) {
+                        window.location.href = webUrl;
+                    }
+                }, 1000);
+            } else {
+                // If they are on a computer, safely open the website in a new tab
+                window.open(webUrl, '_blank');
             }
         }
     });
