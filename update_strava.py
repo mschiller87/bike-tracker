@@ -11,7 +11,8 @@ CLIENT_SECRET = os.environ.get('STRAVA_CLIENT_SECRET')
 REFRESH_TOKEN = os.environ.get('STRAVA_REFRESH_TOKEN')
 CLEAN_WIPE = os.environ.get('CLEAN_WIPE') == 'true' 
 
-TRIP_START_DATE = "2026-05-09" 
+TRAINING_START_DATE = "2026-05-09"
+TRIP_START_DATE = "2026-06-01" # CHANGE THIS to your actual departure date
 
 def get_ride_weather(lat, lon, date_str):
     url = f"https://api.open-meteo.com/v1/forecast?latitude={lat}&longitude={lon}&start_date={date_str}&end_date={date_str}&daily=temperature_2m_max,temperature_2m_min&temperature_unit=fahrenheit&timezone=auto"
@@ -57,7 +58,8 @@ def main():
     headers = {'Authorization': f'Bearer {access_token}'}
     activities = requests.get("https://www.strava.com/api/v3/athlete/activities?per_page=100", headers=headers).json()
 
-    trip_rides = [a for a in activities if a['start_date_local'][:10] >= TRIP_START_DATE and a['type'] == 'Ride']
+    # Pull everything from the Training Start Date onwards
+    trip_rides = [a for a in activities if a['start_date_local'][:10] >= TRAINING_START_DATE and a['type'] == 'Ride']
     trip_rides.sort(key=lambda x: x['start_date_local'])
 
     os.makedirs('_posts', exist_ok=True)
@@ -74,13 +76,19 @@ def main():
         date_str = ride['start_date_local'][:10]
         
         ride_miles = ride['distance'] * 0.000621371
-        total_miles += ride_miles
-        if ride_miles > longest_day_miles: longest_day_miles = ride_miles
+        
+        # Determine if it's a training ride based on the date
+        is_training = date_str < TRIP_START_DATE
+
+        # Only add to global mileage if it is an official trip ride
+        if not is_training:
+            total_miles += ride_miles
+            if ride_miles > longest_day_miles: longest_day_miles = ride_miles
 
         if act_id in state["processed_ids"]:
             continue
 
-        print(f"Processing NEW ride: {title}")
+        print(f"Processing NEW ride: {title} (Training: {is_training})")
         
         location_str = "On the Road" 
         end_lat, end_lon = None, None
@@ -102,35 +110,38 @@ def main():
             except Exception as e:
                 print(f"Geocoding failed for {title}: {e}")
 
-            state["geojson_features"].append({
-                "type": "Feature",
-                "properties": {"name": title, "date": date_str},
-                "geometry": {"type": "LineString", "coordinates": geojson_coords}
-            })
+            # Only add route to the live map if it is an official trip ride
+            if not is_training:
+                state["geojson_features"].append({
+                    "type": "Feature",
+                    "properties": {"name": title, "date": date_str},
+                    "geometry": {"type": "LineString", "coordinates": geojson_coords}
+                })
 
         detail_url = f"https://www.strava.com/api/v3/activities/{act_id}"
         details = requests.get(detail_url, headers=headers).json()
         
         ride_elevation = details.get('total_elevation_gain', 0) * 3.28084
-        state["total_elevation_ft"] += ride_elevation
-        state["total_moving_seconds"] += details.get('moving_time', 0)
-        state["total_calories"] += details.get('calories', 0)
         description = details.get('description') or "No journal entry today... just pedaling!"
 
-        state["total_hot_dogs"] += description.count('🌭')
-        
-        # --- NEW SLEEP LOGIC ---
-        if '⛺' in description or '⛺️' in description:
-            state["total_tents"] += 1
-        else:
-            state["total_beds"] += 1
+        # Only add to global stats if it is an official trip ride
+        if not is_training:
+            state["total_elevation_ft"] += ride_elevation
+            state["total_moving_seconds"] += details.get('moving_time', 0)
+            state["total_calories"] += details.get('calories', 0)
 
-        if end_lat and end_lon:
-            max_t, min_t = get_ride_weather(end_lat, end_lon, date_str)
-            if max_t is not None and max_t > state["overall_hottest"]: state["overall_hottest"] = max_t
-            if min_t is not None and min_t < state["overall_coldest"]: state["overall_coldest"] = min_t
+            state["total_hot_dogs"] += description.count('🌭')
+            
+            if '⛺' in description or '⛺️' in description:
+                state["total_tents"] += 1
+            else:
+                state["total_beds"] += 1
 
-        # Changed size from 5000 to 600
+            if end_lat and end_lon:
+                max_t, min_t = get_ride_weather(end_lat, end_lon, date_str)
+                if max_t is not None and max_t > state["overall_hottest"]: state["overall_hottest"] = max_t
+                if min_t is not None and min_t < state["overall_coldest"]: state["overall_coldest"] = min_t
+
         photos_url = f"https://www.strava.com/api/v3/activities/{act_id}/photos?size=600"
         photos = requests.get(photos_url, headers=headers).json()
         
