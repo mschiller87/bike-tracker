@@ -29,16 +29,6 @@
         .header-text { padding: 25px 20px 20px 20px; transition: padding 0.3s ease; }
         header h1 { font-size: clamp(1.5rem, 5vw, 3rem); font-weight: bold; text-transform: uppercase; letter-spacing: -1.5px; margin: 0; white-space: nowrap; }
         header .subtitle { font-size: clamp(0.65rem, 2vw, 0.9rem); text-transform: uppercase; letter-spacing: 2px; color: #aaa; margin-top: 10px; margin-bottom: 0; white-space: nowrap; }
-        
-        /* New Bio Text CSS */
-        header .bio-text { 
-            font-size: clamp(0.8rem, 2.5vw, 0.95rem); 
-            color: #ccc; 
-            max-width: 600px; 
-            margin: 15px auto 0 auto; 
-            line-height: 1.5; 
-            font-weight: normal; 
-        }
 
         /* Updated Tabs: Text Always Visible */
         .mta-tabs { display: flex; width: 100%; height: 65px; }
@@ -152,11 +142,7 @@
         <div class="header-text">
             <h1>The Transcontinental</h1>
             <p class="subtitle">Pacific to Atlantic &nbsp;&bull;&nbsp; Summer 2026</p>
-            
-            <p class="bio-text">
-                Hi, I'm Matt. I'm moving from Santa Cruz, CA to NYC and decided to bike there. Follow along on my 4,500 mile journey as I pedal from the Pacific to the Atlantic.
-            </p>
-            </div>
+        </div>
         
         <nav class="mta-tabs">
             <a href="{{ site.baseurl }}/" class="mta-tab tab-blue {% if page.url == '/' or page.url == '/index.html' %}active{% endif %}">
