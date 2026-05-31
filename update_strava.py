@@ -38,9 +38,12 @@ def main():
     if os.path.exists(state_file):
         with open(state_file, 'r') as f:
             state = json.load(f)
+            # Ensure the new comment tracking dictionary exists for older memory banks
+            if "comment_counts" not in state:
+                state["comment_counts"] = {}
     else:
         state = {
-            "processed_ids": [], "total_elevation_ft": 0, "total_moving_seconds": 0,
+            "processed_ids": [], "comment_counts": {}, "total_elevation_ft": 0, "total_moving_seconds": 0,
             "total_calories": 0, "overall_hottest": -999, "overall_coldest": 999,
             "total_hot_dogs": 0, "total_tents": 0, "total_beds": 0, "geojson_features": []
         }
@@ -58,7 +61,6 @@ def main():
     headers = {'Authorization': f'Bearer {access_token}'}
     activities = requests.get("https://www.strava.com/api/v3/athlete/activities?per_page=100", headers=headers).json()
 
-    # Pull everything from the Training Start Date onwards
     trip_rides = [a for a in activities if a['start_date_local'][:10] >= TRAINING_START_DATE and a['type'] == 'Ride']
     trip_rides.sort(key=lambda x: x['start_date_local'])
 
@@ -76,19 +78,26 @@ def main():
         date_str = ride['start_date_local'][:10]
         
         ride_miles = ride['distance'] * 0.000621371
-        
-        # Determine if it's a training ride based on the date
         is_training = date_str < TRIP_START_DATE
 
-        # Only add to global mileage if it is an official trip ride
         if not is_training:
             total_miles += ride_miles
             if ride_miles > longest_day_miles: longest_day_miles = ride_miles
 
-        if act_id in state["processed_ids"]:
+        # Smart Comment Check: Is it a new ride, or an old ride with new comments?
+        is_new_ride = act_id not in state["processed_ids"]
+        current_comment_count = ride.get('comment_count', 0)
+        saved_comment_count = state["comment_counts"].get(str(act_id), -1)
+        
+        needs_comment_update = (not is_new_ride) and (current_comment_count > saved_comment_count)
+
+        if not is_new_ride and not needs_comment_update:
             continue
 
-        print(f"Processing NEW ride: {title} (Training: {is_training})")
+        if needs_comment_update:
+            print(f"🔄 Updating comments for old ride: {title}")
+        else:
+            print(f"Processing NEW ride: {title} (Training: {is_training})")
         
         location_str = "On the Road" 
         end_lat, end_lon = None, None
@@ -110,8 +119,8 @@ def main():
             except Exception as e:
                 print(f"Geocoding failed for {title}: {e}")
 
-            # Only add route to the live map if it is an official trip ride
-            if not is_training:
+            # Only add to map if it's a new, non-training ride
+            if is_new_ride and not is_training:
                 state["geojson_features"].append({
                     "type": "Feature",
                     "properties": {"name": title, "date": date_str},
@@ -124,8 +133,8 @@ def main():
         ride_elevation = details.get('total_elevation_gain', 0) * 3.28084
         description = details.get('description') or "No journal entry today... just pedaling!"
 
-        # Only add to global stats if it is an official trip ride
-        if not is_training:
+        # Only augment global stats if it is a NEW, official trip ride to prevent double-counting
+        if is_new_ride and not is_training:
             state["total_elevation_ft"] += ride_elevation
             state["total_moving_seconds"] += details.get('moving_time', 0)
             state["total_calories"] += details.get('calories', 0)
@@ -142,6 +151,7 @@ def main():
                 if max_t is not None and max_t > state["overall_hottest"]: state["overall_hottest"] = max_t
                 if min_t is not None and min_t < state["overall_coldest"]: state["overall_coldest"] = min_t
 
+        # Fetch Photos
         photos_url = f"https://www.strava.com/api/v3/activities/{act_id}/photos?size=600"
         photos = requests.get(photos_url, headers=headers).json()
         
@@ -155,14 +165,34 @@ def main():
                     if idx == 0: primary_image_markdown = f"image: {img_url}"
                     else: gallery_images_markdown += f"![Gallery Image]({img_url})\n"
 
+        # Fetch Comments
+        comments_url = f"https://www.strava.com/api/v3/activities/{act_id}/comments"
+        comments_data = requests.get(comments_url, headers=headers).json()
+        
+        comments_markdown = ""
+        if type(comments_data) is list and len(comments_data) > 0:
+            comments_markdown += "\n<hr>\n\n### 💬 Comments\n"
+            for c in comments_data:
+                author = f"{c['athlete']['firstname']} {c['athlete']['lastname']}"
+                text = c['text']
+                comments_markdown += f"**{author}:** {text}  \n"
+        
+        comments_markdown += f"\n\n<a href='https://www.strava.com/activities/{act_id}' target='_blank' style='display:inline-block; margin-top:15px; padding:8px 15px; background:#fc4c02; color:white; text-decoration:none; border-radius:4px; font-weight:bold;'>Join the conversation on Strava</a>\n"
+
+        # Write Markdown File
         filename = f"_posts/{date_str}-{act_id}.md"
         with open(filename, 'w', encoding='utf-8') as f:
             f.write(f"---\nlayout: post\ntitle: \"{title}\"\ndate: {date_str}\nlocation: \"{location_str}\"\ndistance: {int(ride_miles)}\nelevation: {int(ride_elevation)}\ntotal_miles: {int(total_miles)}\n")
             if primary_image_markdown: f.write(f"{primary_image_markdown}\n")
             f.write(f"---\n\n{description}\n")
             if gallery_images_markdown: f.write(f"\n### Today's Gallery\n{gallery_images_markdown}")
+            f.write(comments_markdown)
         
-        state["processed_ids"].append(act_id)
+        if is_new_ride:
+            state["processed_ids"].append(act_id)
+        
+        # Save the new comment count to the memory bank
+        state["comment_counts"][str(act_id)] = current_comment_count
 
     # --- 6. SAVE DATA ---
     with open('strava_rides.geojson', 'w') as f:
