@@ -91,7 +91,17 @@ layout: default
     }
     .post-image-grid img:hover { opacity: 0.8; }
 
-    /* 4. The Subdued Toggle Link */
+    /* 4. Comment Section & Strava Link */
+    .post-full hr { border: none; border-top: 2px solid #f4f4f4; margin: 40px 0 25px 0; }
+    .post-full h3 { font-size: 1rem; color: #121212; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 15px; }
+    .post-full p strong { color: #121212; font-weight: 800; }
+    .post-full a[href*="strava.com"] {
+        display: inline-block;
+        transition: opacity 0.2s ease;
+    }
+    .post-full a[href*="strava.com"]:hover { opacity: 0.85; }
+
+    /* 5. The Subdued Toggle Link */
     .expand-toggle {
         background: none; border: none; padding: 0; 
         font-size: 0.75rem; 
@@ -107,7 +117,7 @@ layout: default
 
     .post-card.expanded { flex-direction: column; }
 
-    /* 5. LIGHTBOX CSS */
+    /* 6. LIGHTBOX CSS */
     .lightbox-overlay { 
         display: none; position: fixed; z-index: 9999; left: 0; top: 0; 
         width: 100%; height: 100%; background-color: rgba(18,18,18,0.95); 
@@ -115,7 +125,6 @@ layout: default
     }
     .lightbox-overlay.active { display: flex; }
     
-    /* Strict border-removal for the lightbox */
     #lightbox-img { 
         max-width: 90%; max-height: 80vh; 
         border: none !important; 
@@ -190,7 +199,7 @@ layout: default
             <h2>{{ post.title }}</h2>
             
             <div class="post-preview">
-                {% assign clean_preview = post.content | split: "### Today's Gallery" | first %}
+                {% assign clean_preview = post.content | split: "### Today's Gallery" | first | split: "### 💬 Comments" | first %}
                 <p>{{ clean_preview | strip_html | truncatewords: 35 }}</p>
             </div>
 
@@ -256,12 +265,28 @@ layout: default
                             img.remove(); 
                         });
                         
+                        // Remove the generated headers to clean up the UI
                         const headers = full.querySelectorAll('h3');
-                        headers.forEach(h => { if(h.innerText.includes('Gallery')) h.remove(); });
+                        headers.forEach(h => { 
+                            if(h.innerText.includes('Gallery')) {
+                                // Insert the gallery container exactly where the header was
+                                h.parentNode.insertBefore(galleryContainer, h.nextSibling);
+                                h.remove(); 
+                            }
+                        });
                         
-                        full.appendChild(galleryContainer);
+                        // If no gallery header was found (e.g., no extra images), just append to the bottom
+                        if (!galleryContainer.parentNode) {
+                            // Insert before the comments HR line if it exists
+                            const hr = full.querySelector('hr');
+                            if (hr) {
+                                full.insertBefore(galleryContainer, hr);
+                            } else {
+                                full.appendChild(galleryContainer);
+                            }
+                        }
+
                         card.dataset.galleryProcessed = "true";
-                        
                         setupLightboxEvents();
                     }
                 } 
