@@ -173,11 +173,14 @@ def main():
         if type(comments_data) is list and len(comments_data) > 0:
             comments_markdown += "\n<hr>\n\n### 💬 Comments\n"
             for c in comments_data:
-                author = f"{c['athlete']['firstname']} {c['athlete']['lastname']}"
+                # Remove periods from the name and trim any extra spaces
+                author = f"{c['athlete'].get('firstname', '')} {c['athlete'].get('lastname', '')}".replace(".", "").strip()
                 text = c['text']
-                comments_markdown += f"**{author}:** {text}  \n"
+                # Wrap in div and span tags so CSS can style the author and text individually
+                comments_markdown += f"<div class='comment-line'><span class='comment-author'>{author}:</span> <span class='comment-text'>{text}</span></div>\n"
         
-        comments_markdown += f"\n\n<a href='https://www.strava.com/activities/{act_id}' target='_blank' style='display:inline-block; margin-top:15px; padding:8px 15px; background:#fc4c02; color:white; text-decoration:none; border-radius:4px; font-weight:bold;'>Join the conversation on Strava</a>\n"
+            # Change the button text and add a CSS class for styling
+            comments_markdown += f"\n<a class='strava-comment-btn' href='https://www.strava.com/activities/{act_id}' target='_blank'>Comment on Strava</a>\n"
 
         # Write Markdown File
         filename = f"_posts/{date_str}-{act_id}.md"
