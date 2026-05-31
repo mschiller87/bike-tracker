@@ -30,23 +30,26 @@
         header h1 { font-size: clamp(1.5rem, 5vw, 3rem); font-weight: bold; text-transform: uppercase; letter-spacing: -1.5px; margin: 0; white-space: nowrap; }
         header p { font-size: clamp(0.65rem, 2vw, 0.9rem); text-transform: uppercase; letter-spacing: 2px; color: #aaa; margin-top: 10px; margin-bottom: 0; white-space: nowrap; }
 
-        .mta-tabs { display: flex; width: 100%; height: 40px; }
+        /* Updated Tabs: Text Always Visible */
+        .mta-tabs { display: flex; width: 100%; height: 65px; }
         
         .mta-tab {
             flex: 1; 
-            display: flex; align-items: center; justify-content: center;
-            text-decoration: none; color: white; font-weight: bold; font-size: 0.8rem;
-            text-transform: uppercase; letter-spacing: 1px; overflow: hidden; 
-            transition: flex 0.4s cubic-bezier(0.25, 1, 0.5, 1);
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            text-decoration: none; color: white; font-weight: bold; font-size: 0.75rem;
+            text-transform: uppercase; letter-spacing: 1px; gap: 4px;
+            transition: background-color 0.2s ease;
         }
 
-        .tab-icon { width: 20px; height: 20px; flex-shrink: 0; filter: invert(1); }
+        .tab-icon { width: 22px; height: 22px; flex-shrink: 0; filter: invert(1); }
         .tab-yellow { color: #121212; }
         .tab-yellow .tab-icon { filter: none; }
 
-        .mta-tab span { opacity: 0; max-width: 0; white-space: nowrap; transition: all 0.4s ease; display: inline-block; }
-        .mta-tab:hover, .mta-tab.active { flex: 3; }
-        .mta-tab:hover span, .mta-tab.active span { opacity: 1; max-width: 150px; margin-left: 8px; }
+        .mta-tab span { display: block; white-space: nowrap; }
+        
+        /* Subtle highlight for active tab */
+        .mta-tab:hover, .mta-tab.active { filter: brightness(1.1); box-shadow: inset 0 -4px 0 rgba(255,255,255,0.3); }
+        .tab-yellow:hover, .tab-yellow.active { box-shadow: inset 0 -4px 0 rgba(18,18,18,0.3); }
 
         .tab-blue   { background-color: #0039A6; }
         .tab-orange { background-color: #FF6319; }
@@ -58,14 +61,12 @@
             width: 100%;
             max-width: 800px; margin: 0 auto;
             background-color: white; 
-            /* Added padding so the floating coffee bar doesn't cover your last post's content */
             padding-bottom: 70px; 
             box-shadow: 0 0 20px rgba(0,0,0,0.05);
         }
 
         /* --- THE FIXED, DRAG-UP FOOTER --- */
         .site-footer {
-            /* Fixes the footer permanently to the bottom of the screen */
             position: fixed;
             bottom: 0;
             left: 0;
@@ -76,7 +77,6 @@
             text-align: center;
             padding: 15px 20px; 
             border-top: 4px solid #FF6319; 
-            /* Adds a slight shadow to make it pop over the content */
             box-shadow: 0 -4px 20px rgba(0,0,0,0.3);
         }
 
@@ -98,14 +98,13 @@
             max-height: 0;
             opacity: 0;
             overflow: hidden;
-            transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); /* Gives it a slight "pop" as it reveals */
+            transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
             display: flex;
             flex-direction: column;
             align-items: center;
             gap: 5px;
         }
 
-        /* When the JS adds the .expanded class, this triggers */
         .site-footer.expanded .footer-hidden-text {
             max-height: 80px; 
             opacity: 1;
@@ -130,9 +129,9 @@
 
         @media (max-width: 600px) {
             .header-text { padding: 12px 10px 10px 10px; }
-            .mta-tabs { height: 32px; } 
-            .tab-icon { width: 16px; height: 16px; } 
-            .mta-tab { font-size: 0.7rem; } 
+            .mta-tabs { height: 55px; } 
+            .tab-icon { width: 18px; height: 18px; } 
+            .mta-tab { font-size: 0.65rem; } 
             .site-footer { padding: 10px 15px; }
         }
     </style>
@@ -191,18 +190,15 @@
             const footer = document.querySelector('.site-footer');
             const trigger = document.getElementById('footer-trigger');
             
-            // Watch the invisible tripwire at the bottom of the page
             const observer = new IntersectionObserver((entries) => {
                 entries.forEach(entry => {
                     if (entry.isIntersecting) {
-                        // User scrolled to the bottom -> Expand
                         footer.classList.add('expanded');
                     } else {
-                        // User scrolled back up -> Shrink
                         footer.classList.remove('expanded');
                     }
                 });
-            }, { rootMargin: '0px 0px 50px 0px' }); // Triggers just before they hit the absolute bottom
+            }, { rootMargin: '0px 0px 50px 0px' }); 
 
             if (trigger) {
                 observer.observe(trigger);
