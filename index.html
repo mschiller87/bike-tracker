@@ -94,12 +94,25 @@ layout: default
     /* 4. Comment Section & Strava Link */
     .post-full hr { border: none; border-top: 2px solid #f4f4f4; margin: 40px 0 25px 0; }
     .post-full h3 { font-size: 1rem; color: #121212; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 15px; }
-    .post-full p strong { color: #121212; font-weight: 800; }
-    .post-full a[href*="strava.com"] {
+    
+    /* Updated Comment Formatting */
+    .comment-line { margin-bottom: 8px; line-height: 1.4; font-size: 0.9rem; }
+    .comment-author { color: #121212; font-weight: normal; } /* Name unbolded */
+    .comment-text { color: #aaa; } /* Text matches expand toggle color */
+    
+    .strava-comment-btn {
         display: inline-block;
+        margin-top: 15px;
+        padding: 6px 14px; /* Shrunk padding */
+        background: #fc4c02;
+        color: white !important;
+        text-decoration: none;
+        border-radius: 4px;
+        font-weight: normal; /* Text unbolded */
+        font-size: 0.8rem; /* Smaller text size */
         transition: opacity 0.2s ease;
     }
-    .post-full a[href*="strava.com"]:hover { opacity: 0.85; }
+    .strava-comment-btn:hover { opacity: 0.85; }
 
     /* 5. The Subdued Toggle Link */
     .expand-toggle {
