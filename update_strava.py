@@ -12,7 +12,7 @@ REFRESH_TOKEN = os.environ.get('STRAVA_REFRESH_TOKEN')
 CLEAN_WIPE = os.environ.get('CLEAN_WIPE') == 'true' 
 
 TRAINING_START_DATE = "2026-05-09"
-TRIP_START_DATE = "2026-06-01" # CHANGE THIS to your actual departure date
+TRIP_START_DATE = "2026-05-31" # CHANGE THIS to your actual departure date
 
 def get_ride_weather(lat, lon, date_str):
     url = f"https://api.open-meteo.com/v1/forecast?latitude={lat}&longitude={lon}&start_date={date_str}&end_date={date_str}&daily=temperature_2m_max,temperature_2m_min&temperature_unit=fahrenheit&timezone=auto"
