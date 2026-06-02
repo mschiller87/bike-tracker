@@ -2,7 +2,9 @@ name: Update Strava Data
 
 on:
   schedule:
-    - cron: '0 8 * * *'
+    # Runs at 7:14 AM UTC (12:14 AM Pacific Daylight Time / 3:14 AM Eastern)
+    # The '14' minute mark bypasses GitHub's top-of-the-hour server delays.
+    - cron: '14 7 * * *'
   workflow_dispatch:
     inputs:
       clean_wipe:
