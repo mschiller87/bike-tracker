@@ -3,9 +3,12 @@ layout: default
 ---
 
 <style>
+    /* Smooth scrolling for the whole page */
+    html { scroll-behavior: smooth; }
+
     /* 1. Sleek Abstract Strip Map CSS */
     .strip-map-container {
-        max-width: 800px; margin: 0 auto; padding: 180px 20px 80px 20px; 
+        max-width: 800px; margin: 0 auto; padding: 180px 20px 60px 20px; 
         font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
     }
     .track-line { display: flex; justify-content: space-between; align-items: flex-end; border-bottom: 6px solid #121212; padding-bottom: 0; position: relative; }
@@ -16,6 +19,43 @@ layout: default
     .angled-label { position: absolute; bottom: 25px; left: 50%; transform-origin: bottom left; transform: rotate(-45deg); font-size: 1.1rem; font-weight: bold; color: #121212; white-space: normal; width: 150px; line-height: 1.2; letter-spacing: -0.5px; }
     .sub-label { display: block; font-size: 0.8rem; color: #888; font-weight: normal; margin-top: 2px; text-transform: uppercase; letter-spacing: 1px; }
     .mileage-stats { position: absolute; top: 25px; font-size: 0.85rem; font-weight: bold; color: #555; text-align: center; width: 100%; text-transform: uppercase; }
+
+    /* --- NEW: Refined All Stops Directory --- */
+    .expand-stops-wrapper { text-align: center; margin-top: 40px; }
+    
+    .expand-stops-btn { 
+        background: none; border: 2px solid #121212; padding: 10px 20px; 
+        font-size: 0.75rem; font-weight: bold; text-transform: uppercase; 
+        letter-spacing: 1px; cursor: pointer; border-radius: 25px; 
+        transition: all 0.2s ease; color: #121212;
+    }
+    .expand-stops-btn:hover { background: #121212; color: white; }
+    
+    .all-stops-container { 
+        display: none; 
+        max-width: 500px; margin: 20px auto 0 auto; 
+        background: #fff; border: 1px solid #eaeaea; 
+        border-radius: 8px; padding: 0; 
+        box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+        /* This max-height creates the scrollable window so it doesn't take up the whole screen */
+        max-height: 280px; overflow-y: auto;
+    }
+    .all-stops-container.active { display: block; }
+    
+    .stops-list { list-style: none; padding: 0; margin: 0; text-align: left; }
+    .stops-list li { border-bottom: 1px solid #f4f4f4; }
+    .stops-list li:last-child { border-bottom: none; }
+    
+    .stop-link { 
+        display: block; padding: 12px 20px; text-decoration: none; transition: background 0.2s;
+    }
+    .stop-link:hover { background: #f9f9f9; }
+    
+    /* 2-line layout hierarchy */
+    .stop-primary { color: #121212; font-weight: bold; font-size: 0.95rem; margin-bottom: 4px; transition: color 0.2s; }
+    .stop-link:hover .stop-primary { color: #fc4c02; }
+    
+    .stop-secondary { color: #888; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px; }
 
     /* 2. The Refined Journal Feed */
     .journal-feed { 
@@ -30,6 +70,8 @@ layout: default
         box-shadow: 0 4px 20px rgba(0,0,0,0.06); 
         overflow: hidden; 
         transition: all 0.3s ease;
+        /* Offset to prevent the sticky header from hiding the post when anchor jumping */
+        scroll-margin-top: 150px; 
     }
     
     .post-thumbnail { 
@@ -192,11 +234,28 @@ layout: default
             <div class="mileage-stats">{{ miles_to_go }} TO GO</div>
         </div>
     </div>
-</div>
+    
+    <div class="expand-stops-wrapper">
+        <button id="toggle-stops-btn" class="expand-stops-btn">View All Previous Stops</button>
+    </div>
+    
+    <div id="all-stops-container" class="all-stops-container">
+        <ul class="stops-list">
+            {% for post in site.posts %}
+            <li>
+                <a href="#post-{{ post.date | date: '%Y-%m-%d' }}" class="stop-link" onclick="closeStopsMenu()">
+                    <div class="stop-primary">{{ post.location }}</div>
+                    <div class="stop-secondary">{{ post.title | truncatewords: 8 }} &nbsp;&bull;&nbsp; {{ post.date | date: "%b %d" }}</div>
+                </a>
+            </li>
+            {% endfor %}
+        </ul>
+    </div>
+    </div>
 
 <main class="journal-feed">
     {% for post in site.posts %}
-    <article class="post-card">
+    <article class="post-card" id="post-{{ post.date | date: '%Y-%m-%d' }}">
         
         {% if post.image %}
         <div class="post-thumbnail">
@@ -235,6 +294,28 @@ layout: default
 </div>
 
 <script>
+    // Toggle Logic for the Stops Directory
+    const toggleStopsBtn = document.getElementById('toggle-stops-btn');
+    const allStopsContainer = document.getElementById('all-stops-container');
+    
+    if (toggleStopsBtn && allStopsContainer) {
+        toggleStopsBtn.addEventListener('click', function() {
+            allStopsContainer.classList.toggle('active');
+            if (allStopsContainer.classList.contains('active')) {
+                this.innerText = 'Hide Previous Stops';
+            } else {
+                this.innerText = 'View All Previous Stops';
+            }
+        });
+    }
+
+    // Closes the menu after jumping to the selected stop
+    window.closeStopsMenu = function() {
+        allStopsContainer.classList.remove('active');
+        toggleStopsBtn.innerText = 'View All Previous Stops';
+    };
+
+    // --- Existing Layout Logic below ---
     document.addEventListener("DOMContentLoaded", function() {
         
         const expandButtons = document.querySelectorAll('.expand-toggle');
@@ -254,12 +335,10 @@ layout: default
                     this.innerHTML = 'Close Entry';
                     card.classList.add('expanded'); 
 
-                    // Automagically create the gallery safely
                     if (!card.dataset.galleryProcessed) {
                         const galleryContainer = document.createElement('div');
                         galleryContainer.className = 'post-image-grid';
                         
-                        // Safely check for a primary thumbnail image
                         if (thumbnail) {
                             const primaryImg = thumbnail.querySelector('img');
                             if (primaryImg) {
@@ -267,7 +346,6 @@ layout: default
                             }
                         }
                         
-                        // Safely grab embedded markdown images
                         const extraImages = full.querySelectorAll('img:not(.lightbox-trigger)');
                         extraImages.forEach(img => {
                             const newImg = document.createElement('img');
@@ -278,19 +356,15 @@ layout: default
                             img.remove(); 
                         });
                         
-                        // Remove the generated headers to clean up the UI
                         const headers = full.querySelectorAll('h3');
                         headers.forEach(h => { 
                             if(h.innerText.includes('Gallery')) {
-                                // Insert the gallery container exactly where the header was
                                 h.parentNode.insertBefore(galleryContainer, h.nextSibling);
                                 h.remove(); 
                             }
                         });
                         
-                        // If no gallery header was found (e.g., no extra images), just append to the bottom
                         if (!galleryContainer.parentNode) {
-                            // Insert before the comments HR line if it exists
                             const hr = full.querySelector('hr');
                             if (hr) {
                                 full.insertBefore(galleryContainer, hr);
@@ -310,11 +384,14 @@ layout: default
                     if (thumbnail) thumbnail.style.display = 'block';
                     this.innerHTML = 'Full Entry';
                     card.classList.remove('expanded');
+                    
+                    const yOffset = -140; 
+                    const y = card.getBoundingClientRect().top + window.pageYOffset + yOffset;
+                    window.scrollTo({top: y, behavior: 'smooth'});
                 }
             });
         });
 
-        // Lightbox Functionality
         let currentGallery = [];
         let currentIndex = 0;
 
@@ -359,34 +436,23 @@ layout: default
         }
     });
 
-    // --- NEW: Smart Strava Deep Linking ---
     document.addEventListener('click', function(e) {
         const btn = e.target.closest('.strava-comment-btn');
         if (btn) {
             e.preventDefault();
             const webUrl = btn.href;
-            
-            // Extract the Strava Activity ID from the standard web link
             const actId = webUrl.substring(webUrl.lastIndexOf('/') + 1);
-            
-            // This is the command that forces the mobile app to open
             const appUrl = 'strava://activities/' + actId;
-
             const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
 
             if (isMobile) {
-                // 1. Fire the hidden command to launch the app
                 window.location.href = appUrl;
-                
-                // 2. If the user's browser is still open and visible after 1 second,
-                // it means the app failed to open (or isn't installed). So, seamlessly navigate to the website instead.
                 setTimeout(function() {
                     if (!document.hidden) {
                         window.location.href = webUrl;
                     }
                 }, 1000);
             } else {
-                // If they are on a computer, safely open the website in a new tab
                 window.open(webUrl, '_blank');
             }
         }
