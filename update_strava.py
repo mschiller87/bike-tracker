@@ -10,9 +10,10 @@ CLIENT_ID = os.environ.get('STRAVA_CLIENT_ID')
 CLIENT_SECRET = os.environ.get('STRAVA_CLIENT_SECRET')
 REFRESH_TOKEN = os.environ.get('STRAVA_REFRESH_TOKEN')
 CLEAN_WIPE = os.environ.get('CLEAN_WIPE') == 'true' 
+REFRESH_RECENT = int(os.environ.get('REFRESH_RECENT', '0'))
 
 TRAINING_START_DATE = "2026-05-09"
-TRIP_START_DATE = "2026-05-31" # CHANGE THIS to your actual departure date
+TRIP_START_DATE = "2026-06-01" # CHANGE THIS to your actual departure date
 
 def get_ride_weather(lat, lon, date_str):
     url = f"https://api.open-meteo.com/v1/forecast?latitude={lat}&longitude={lon}&start_date={date_str}&end_date={date_str}&daily=temperature_2m_max,temperature_2m_min&temperature_unit=fahrenheit&timezone=auto"
@@ -24,7 +25,7 @@ def get_ride_weather(lat, lon, date_str):
         return None, None
 
 def main():
-    print(f"🚴‍♂️ Starting Sync (Clean Wipe: {CLEAN_WIPE})...")
+    print(f"🚴‍♂️ Starting Sync (Wipe: {CLEAN_WIPE} | Refresh: {REFRESH_RECENT})...")
 
     # --- 2. THE CLEAN WIPE LOGIC ---
     state_file = '_data/sync_state.json'
@@ -38,12 +39,12 @@ def main():
     if os.path.exists(state_file):
         with open(state_file, 'r') as f:
             state = json.load(f)
-            # Ensure the new comment tracking dictionary exists for older memory banks
-            if "comment_counts" not in state:
-                state["comment_counts"] = {}
+            if "comment_counts" not in state: state["comment_counts"] = {}
+            if "ride_stats" not in state: state["ride_stats"] = {}
     else:
         state = {
-            "processed_ids": [], "comment_counts": {}, "total_elevation_ft": 0, "total_moving_seconds": 0,
+            "processed_ids": [], "comment_counts": {}, "ride_stats": {}, 
+            "total_elevation_ft": 0, "total_moving_seconds": 0,
             "total_calories": 0, "overall_hottest": -999, "overall_coldest": 999,
             "total_hot_dogs": 0, "total_tents": 0, "total_beds": 0, "geojson_features": []
         }
@@ -68,10 +69,34 @@ def main():
     os.makedirs('images', exist_ok=True)
     os.makedirs('_data', exist_ok=True) 
 
+    # --- 5. THE SELECTIVE REFRESH LOGIC ---
+    if REFRESH_RECENT > 0 and not CLEAN_WIPE:
+        rides_to_refresh = trip_rides[-REFRESH_RECENT:]
+        for r in rides_to_refresh:
+            act_id = r['id']
+            str_id = str(act_id)
+            if act_id in state["processed_ids"]:
+                print(f"♻️ Unpacking ride {act_id} for a quick refresh...")
+                state["processed_ids"].remove(act_id)
+                
+                # Subtract its old stats so we don't double count
+                if str_id in state["ride_stats"]:
+                    old = state["ride_stats"][str_id]
+                    state["total_elevation_ft"] -= old.get("elevation", 0)
+                    state["total_moving_seconds"] -= old.get("moving_time", 0)
+                    state["total_calories"] -= old.get("calories", 0)
+                    state["total_hot_dogs"] -= old.get("hot_dogs", 0)
+                    state["total_tents"] -= old.get("tents", 0)
+                    state["total_beds"] -= old.get("beds", 0)
+                    del state["ride_stats"][str_id]
+                
+                # Remove from map geojson
+                state["geojson_features"] = [f for f in state["geojson_features"] if f.get("properties", {}).get("id") != act_id]
+
     total_miles = 0
     longest_day_miles = 0
 
-    # --- 5. THE SMART PIPELINE ---
+    # --- 6. THE SMART PIPELINE ---
     for ride in trip_rides:
         act_id = ride['id']
         title = ride['name'].replace('"', "'")
@@ -84,7 +109,6 @@ def main():
             total_miles += ride_miles
             if ride_miles > longest_day_miles: longest_day_miles = ride_miles
 
-        # Smart Comment Check: Is it a new ride, or an old ride with new comments?
         is_new_ride = act_id not in state["processed_ids"]
         current_comment_count = ride.get('comment_count', 0)
         saved_comment_count = state["comment_counts"].get(str(act_id), -1)
@@ -97,7 +121,7 @@ def main():
         if needs_comment_update:
             print(f"🔄 Updating comments for old ride: {title}")
         else:
-            print(f"Processing NEW ride: {title} (Training: {is_training})")
+            print(f"Processing NEW/REFRESHED ride: {title} (Training: {is_training})")
         
         location_str = "On the Road" 
         end_lat, end_lon = None, None
@@ -119,11 +143,10 @@ def main():
             except Exception as e:
                 print(f"Geocoding failed for {title}: {e}")
 
-            # Only add to map if it's a new, non-training ride
             if is_new_ride and not is_training:
                 state["geojson_features"].append({
                     "type": "Feature",
-                    "properties": {"name": title, "date": date_str},
+                    "properties": {"name": title, "date": date_str, "id": act_id},
                     "geometry": {"type": "LineString", "coordinates": geojson_coords}
                 })
 
@@ -132,26 +155,34 @@ def main():
         
         ride_elevation = details.get('total_elevation_gain', 0) * 3.28084
         description = details.get('description') or "No journal entry today... just pedaling!"
+        
+        hot_dogs_today = description.count('🌭')
+        tents_today = 1 if ('⛺' in description or '⛺️' in description) else 0
+        beds_today = 0 if ('⛺' in description or '⛺️' in description) else 1
 
-        # Only augment global stats if it is a NEW, official trip ride to prevent double-counting
         if is_new_ride and not is_training:
             state["total_elevation_ft"] += ride_elevation
             state["total_moving_seconds"] += details.get('moving_time', 0)
             state["total_calories"] += details.get('calories', 0)
+            state["total_hot_dogs"] += hot_dogs_today
+            state["total_tents"] += tents_today
+            state["total_beds"] += beds_today
 
-            state["total_hot_dogs"] += description.count('🌭')
-            
-            if '⛺' in description or '⛺️' in description:
-                state["total_tents"] += 1
-            else:
-                state["total_beds"] += 1
+            # Save stats to memory for future Quick Refreshes
+            state["ride_stats"][str(act_id)] = {
+                "elevation": ride_elevation,
+                "moving_time": details.get('moving_time', 0),
+                "calories": details.get('calories', 0),
+                "hot_dogs": hot_dogs_today,
+                "tents": tents_today,
+                "beds": beds_today
+            }
 
             if end_lat and end_lon:
                 max_t, min_t = get_ride_weather(end_lat, end_lon, date_str)
                 if max_t is not None and max_t > state["overall_hottest"]: state["overall_hottest"] = max_t
                 if min_t is not None and min_t < state["overall_coldest"]: state["overall_coldest"] = min_t
 
-        # Fetch Photos
         photos_url = f"https://www.strava.com/api/v3/activities/{act_id}/photos?size=600"
         photos = requests.get(photos_url, headers=headers).json()
         
@@ -165,7 +196,6 @@ def main():
                     if idx == 0: primary_image_markdown = f"image: {img_url}"
                     else: gallery_images_markdown += f"![Gallery Image]({img_url})\n"
 
-        # Fetch Comments
         comments_url = f"https://www.strava.com/api/v3/activities/{act_id}/comments"
         comments_data = requests.get(comments_url, headers=headers).json()
         
@@ -173,16 +203,11 @@ def main():
         if type(comments_data) is list and len(comments_data) > 0:
             comments_markdown += "\n<hr>\n\n### 💬 Comments\n"
             for c in comments_data:
-                # Remove periods from the name and trim any extra spaces
                 author = f"{c['athlete'].get('firstname', '')} {c['athlete'].get('lastname', '')}".replace(".", "").strip()
                 text = c['text']
-                # Wrap in div and span tags so CSS can style the author and text individually
                 comments_markdown += f"<div class='comment-line'><span class='comment-author'>{author}:</span> <span class='comment-text'>{text}</span></div>\n"
-        
-            # Change the button text and add a CSS class for styling
             comments_markdown += f"\n<a class='strava-comment-btn' href='https://www.strava.com/activities/{act_id}' target='_blank'>Comment on Strava</a>\n"
 
-        # Write Markdown File
         filename = f"_posts/{date_str}-{act_id}.md"
         with open(filename, 'w', encoding='utf-8') as f:
             f.write(f"---\nlayout: post\ntitle: \"{title}\"\ndate: {date_str}\nlocation: \"{location_str}\"\ndistance: {int(ride_miles)}\nelevation: {int(ride_elevation)}\ntotal_miles: {int(total_miles)}\n")
@@ -194,10 +219,9 @@ def main():
         if is_new_ride:
             state["processed_ids"].append(act_id)
         
-        # Save the new comment count to the memory bank
         state["comment_counts"][str(act_id)] = current_comment_count
 
-    # --- 6. SAVE DATA ---
+    # --- 7. SAVE DATA ---
     with open('strava_rides.geojson', 'w') as f:
         json.dump({"type": "FeatureCollection", "features": state["geojson_features"]}, f)
     with open(state_file, 'w') as f:
