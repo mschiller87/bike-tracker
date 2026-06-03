@@ -2,13 +2,23 @@ name: Update Strava Data
 
 on:
   schedule:
-    # Runs at 7:14 AM UTC (12:14 AM Pacific Daylight Time / 3:14 AM Eastern)
-    # The '14' minute mark bypasses GitHub's top-of-the-hour server delays.
+    # Runs at 12:14 AM Pacific
     - cron: '14 7 * * *'
   workflow_dispatch:
     inputs:
+      refresh_recent:
+        description: 'Quick Refresh: Select how many recent posts to update (fixes typos/photos)'
+        required: true
+        type: choice
+        default: '0'
+        options:
+          - '0'
+          - '1'
+          - '2'
+          - '3'
+          - '5'
       clean_wipe:
-        description: 'Check this to delete all posts/stats and rebuild from scratch'
+        description: 'Nuclear Option: Check this to delete ALL posts and rebuild from scratch'
         required: false
         type: boolean
         default: false
@@ -39,6 +49,7 @@ jobs:
           STRAVA_CLIENT_SECRET: ${{ secrets.STRAVA_CLIENT_SECRET }}
           STRAVA_REFRESH_TOKEN: ${{ secrets.STRAVA_REFRESH_TOKEN }}
           CLEAN_WIPE: ${{ github.event.inputs.clean_wipe }}
+          REFRESH_RECENT: ${{ github.event.inputs.refresh_recent || '0' }}
         run: python update_strava.py
 
       - name: Commit and push changes
