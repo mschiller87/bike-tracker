@@ -13,7 +13,7 @@ CLEAN_WIPE = os.environ.get('CLEAN_WIPE') == 'true'
 REFRESH_RECENT = int(os.environ.get('REFRESH_RECENT', '0'))
 
 TRAINING_START_DATE = "2026-05-09"
-TRIP_START_DATE = "2026-06-01" # CHANGE THIS to your actual departure date
+TRIP_START_DATE = "2026-06-01" 
 
 def get_ride_weather(lat, lon, date_str):
     url = f"https://api.open-meteo.com/v1/forecast?latitude={lat}&longitude={lon}&start_date={date_str}&end_date={date_str}&daily=temperature_2m_max,temperature_2m_min&temperature_unit=fahrenheit&timezone=auto"
@@ -79,7 +79,6 @@ def main():
                 print(f"♻️ Unpacking ride {act_id} for a quick refresh...")
                 state["processed_ids"].remove(act_id)
                 
-                # Subtract its old stats so we don't double count
                 if str_id in state["ride_stats"]:
                     old = state["ride_stats"][str_id]
                     state["total_elevation_ft"] -= old.get("elevation", 0)
@@ -90,7 +89,6 @@ def main():
                     state["total_beds"] -= old.get("beds", 0)
                     del state["ride_stats"][str_id]
                 
-                # Remove from map geojson
                 state["geojson_features"] = [f for f in state["geojson_features"] if f.get("properties", {}).get("id") != act_id]
 
     total_miles = 0
@@ -156,9 +154,13 @@ def main():
         ride_elevation = details.get('total_elevation_gain', 0) * 3.28084
         description = details.get('description') or "No journal entry today... just pedaling!"
         
+        # Calculate the stats first
         hot_dogs_today = description.count('🌭')
         tents_today = 1 if ('⛺' in description or '⛺️' in description) else 0
-        beds_today = 0 if ('⛺' in description or '⛺️' in description) else 1
+        beds_today = 0 if tents_today else 1
+
+        # --- NEW: Scrub the utility emojis out of the text so they don't display on the site
+        description = description.replace('⛺️', '').replace('⛺', '').replace('🛏️', '').replace('🛏', '').strip()
 
         if is_new_ride and not is_training:
             state["total_elevation_ft"] += ride_elevation
@@ -168,7 +170,6 @@ def main():
             state["total_tents"] += tents_today
             state["total_beds"] += beds_today
 
-            # Save stats to memory for future Quick Refreshes
             state["ride_stats"][str(act_id)] = {
                 "elevation": ride_elevation,
                 "moving_time": details.get('moving_time', 0),
