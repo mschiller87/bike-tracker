@@ -67,16 +67,28 @@ title: Live Tracker
         margin-bottom: 20px;
     }
 
+    /* Custom sleek map popups */
+    .custom-popup .leaflet-popup-content-wrapper {
+        border-radius: 6px;
+        box-shadow: 0 4px 14px rgba(0,0,0,0.2);
+    }
+    .custom-popup .leaflet-popup-content {
+        margin: 14px 18px;
+        font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+        text-align: center;
+    }
+    .popup-loc { font-weight: bold; font-size: 15px; color: #121212; margin-bottom: 4px; }
+    .popup-meta { font-size: 11px; color: #888; text-transform: uppercase; letter-spacing: 0.5px; }
+
     /* --- MOBILE MAP FIXES --- */
     @media (max-width: 600px) {
         .map-wrapper {
-            height: calc(100vh - 120px) !important; /* Adjusts map height to match the new slimmer mobile header */
+            height: calc(100vh - 120px) !important; 
         }
-        /* Hides the text and turns the button into a pure circle icon! */
         .strava-text { display: none; }
         .strava-btn { 
             padding: 10px; 
-            border-radius: 50%; /* Makes it a circle */
+            border-radius: 50%; 
             top: 15px; 
             right: 15px;
         }
@@ -102,6 +114,13 @@ title: Live Tracker
 <script>
     var map = L.map('map', { preferCanvas: true }).setView([39.8283, -98.5795], 4);
 
+    map.createPane('stravaPane');
+    map.getPane('stravaPane').style.zIndex = 450; 
+    
+    // We create a pane specifically for the dots so they sit above the orange lines
+    map.createPane('markerPane');
+    map.getPane('markerPane').style.zIndex = 460;
+
     L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
         maxZoom: 19,
         attribution: '&copy; OpenStreetMap &copy; CARTO'
@@ -109,11 +128,6 @@ title: Live Tracker
 
     var myRoutes = [
         'gpx/Transcontinental.gpx'
-        //'gpx/TA_01_EB_Main_2022.gpx', 'gpx/TA_02_EB_Main_2018.gpx', 'gpx/TA_03_EB_Main_2022.gpx',
-        //'gpx/TA_04_EB_Main_2020.gpx', 'gpx/TA_05_EB_Main_2018.gpx', 'gpx/TA_06_EB_Main_2018.gpx',
-        //'gpx/TA_07_EB_Main_2019.gpx', 'gpx/TA_08_EB_Main_2019.gpx', 'gpx/TA_09_custom.gpx',
-        //'gpx/R66_custom.gpx', 'gpx/MI_to_NY.gpx',
-        //'gpx/Hudson_Valley_EST.gpx', 'gpx/Erie_Canal_EST_Buffalo-Albany.gpx', 'gpx/Great_Lake-to-Lake_Trails_Route__1.gpx'
     ];
 
     myRoutes.forEach(function(routeFile) {
@@ -128,12 +142,41 @@ title: Live Tracker
         .then(response => response.json())
         .then(data => {
             L.geoJSON(data, {
+                pane: 'stravaPane',
                 style: function (feature) {
                     return { color: '#FF6319', weight: 5, opacity: 1.0 };
                 },
                 onEachFeature: function (feature, layer) {
-                    var distMiles = (feature.properties.distance * 0.000621371).toFixed(1);
-                    layer.bindPopup("<b>" + feature.properties.name + "</b><br>" + distMiles + " miles");
+                    var displayDate = feature.properties.date ? feature.properties.date : "Date unknown";
+                    var displayLoc = feature.properties.location ? feature.properties.location : "Location unknown";
+                    var displayDist = feature.properties.distance ? feature.properties.distance : "0";
+                    
+                    var popupHTML = "<div class='popup-loc'>" + displayLoc + "</div>" +
+                                    "<div class='popup-meta'>" + displayDate + " &bull; " + displayDist + " MI</div>";
+
+                    // Bind popup to the orange line itself
+                    layer.bindPopup(popupHTML, { className: 'custom-popup' });
+
+                    // Find the last coordinate of the line to place the dot
+                    var coords = feature.geometry.coordinates;
+                    if (coords && coords.length > 0) {
+                        var endPoint = coords[coords.length - 1];
+                        var latlng = [endPoint[1], endPoint[0]]; // Leaflet uses [lat, lng], GeoJSON uses [lng, lat]
+                        
+                        // Draw a sleek white and orange dot at the end of the ride
+                        var dot = L.circleMarker(latlng, {
+                            pane: 'markerPane',
+                            radius: 5,
+                            fillColor: "#fff",
+                            color: "#121212",
+                            weight: 3,
+                            opacity: 1,
+                            fillOpacity: 1
+                        }).addTo(map);
+
+                        // Attach the exact same popup to the dot
+                        dot.bindPopup(popupHTML, { className: 'custom-popup' });
+                    }
                 }
             }).addTo(map);
         })
