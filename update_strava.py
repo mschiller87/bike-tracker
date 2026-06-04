@@ -141,10 +141,17 @@ def main():
             except Exception as e:
                 print(f"Geocoding failed for {title}: {e}")
 
+            # --- NEW: Added distance and location to the map properties ---
             if is_new_ride and not is_training:
                 state["geojson_features"].append({
                     "type": "Feature",
-                    "properties": {"name": title, "date": date_str, "id": act_id},
+                    "properties": {
+                        "name": title, 
+                        "date": date_str, 
+                        "id": act_id,
+                        "distance": round(ride_miles, 1),
+                        "location": location_str
+                    },
                     "geometry": {"type": "LineString", "coordinates": geojson_coords}
                 })
 
@@ -154,12 +161,10 @@ def main():
         ride_elevation = details.get('total_elevation_gain', 0) * 3.28084
         description = details.get('description') or "No journal entry today... just pedaling!"
         
-        # Calculate the stats first
         hot_dogs_today = description.count('🌭')
         tents_today = 1 if ('⛺' in description or '⛺️' in description) else 0
         beds_today = 0 if tents_today else 1
 
-        # --- NEW: Scrub the utility emojis out of the text so they don't display on the site
         description = description.replace('⛺️', '').replace('⛺', '').replace('🛏️', '').replace('🛏', '').strip()
 
         if is_new_ride and not is_training:
