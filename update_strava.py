@@ -18,7 +18,8 @@ TRIP_START_DATE = "2026-06-01"
 def get_ride_weather(lat, lon, date_str):
     url = f"https://api.open-meteo.com/v1/forecast?latitude={lat}&longitude={lon}&start_date={date_str}&end_date={date_str}&daily=temperature_2m_max,temperature_2m_min&temperature_unit=fahrenheit&timezone=auto"
     try:
-        response = requests.get(url)
+        # NEW: Added a 15-second timeout safety net
+        response = requests.get(url, timeout=15)
         data = response.json()
         return round(data['daily']['temperature_2m_max'][0]), round(data['daily']['temperature_2m_min'][0])
     except:
@@ -52,7 +53,7 @@ def main():
     # --- 4. AUTH & FETCH ---
     auth_url = "https://www.strava.com/oauth/token"
     payload = {'client_id': CLIENT_ID, 'client_secret': CLIENT_SECRET, 'refresh_token': REFRESH_TOKEN, 'grant_type': 'refresh_token', 'f': 'json'}
-    res = requests.post(auth_url, data=payload, verify=False)
+    res = requests.post(auth_url, data=payload, verify=False, timeout=15)
     access_token = res.json().get('access_token')
 
     if not access_token:
@@ -60,7 +61,7 @@ def main():
         return
 
     headers = {'Authorization': f'Bearer {access_token}'}
-    activities = requests.get("https://www.strava.com/api/v3/athlete/activities?per_page=100", headers=headers).json()
+    activities = requests.get("https://www.strava.com/api/v3/athlete/activities?per_page=100", headers=headers, timeout=15).json()
 
     trip_rides = [a for a in activities if a['start_date_local'][:10] >= TRAINING_START_DATE and a['type'] == 'Ride']
     trip_rides.sort(key=lambda x: x['start_date_local'])
@@ -132,7 +133,7 @@ def main():
             nom_url = f"https://nominatim.openstreetmap.org/reverse?lat={end_lat}&lon={end_lon}&format=jsonv2"
             try:
                 time.sleep(1)
-                geo_data = requests.get(nom_url, headers={'User-Agent': 'TranscontinentalBikeTracker/1.0'}).json()
+                geo_data = requests.get(nom_url, headers={'User-Agent': 'TranscontinentalBikeTracker/1.0'}, timeout=15).json()
                 address = geo_data.get('address', {})
                 city = address.get('city') or address.get('town') or address.get('village') or address.get('hamlet') or address.get('county')
                 state_name = address.get('state')
@@ -141,7 +142,6 @@ def main():
             except Exception as e:
                 print(f"Geocoding failed for {title}: {e}")
 
-            # --- NEW: Added distance and location to the map properties ---
             if is_new_ride and not is_training:
                 state["geojson_features"].append({
                     "type": "Feature",
@@ -156,7 +156,7 @@ def main():
                 })
 
         detail_url = f"https://www.strava.com/api/v3/activities/{act_id}"
-        details = requests.get(detail_url, headers=headers).json()
+        details = requests.get(detail_url, headers=headers, timeout=15).json()
         
         ride_elevation = details.get('total_elevation_gain', 0) * 3.28084
         description = details.get('description') or "No journal entry today... just pedaling!"
@@ -190,7 +190,7 @@ def main():
                 if min_t is not None and min_t < state["overall_coldest"]: state["overall_coldest"] = min_t
 
         photos_url = f"https://www.strava.com/api/v3/activities/{act_id}/photos?size=600"
-        photos = requests.get(photos_url, headers=headers).json()
+        photos = requests.get(photos_url, headers=headers, timeout=15).json()
         
         primary_image_markdown = ""
         gallery_images_markdown = ""
@@ -203,7 +203,7 @@ def main():
                     else: gallery_images_markdown += f"![Gallery Image]({img_url})\n"
 
         comments_url = f"https://www.strava.com/api/v3/activities/{act_id}/comments"
-        comments_data = requests.get(comments_url, headers=headers).json()
+        comments_data = requests.get(comments_url, headers=headers, timeout=15).json()
         
         comments_markdown = ""
         if type(comments_data) is list and len(comments_data) > 0:
