@@ -11,20 +11,6 @@
     </link>
     <time>2026-06-14T11:38:27.000Z</time>
   </metadata>
-  <wpt lat="38.81650636279616" lon="-89.94728114909267">
-    <name>Start of Quercus Trail</name>
-    <cmt>trailhead</cmt>
-    <desc>An asphalt/limestone trail stretching 18.9 miles.</desc>
-    <sym>Dot</sym>
-    <type>info</type>
-  </wpt>
-  <wpt lat="38.90329360961914" lon="-90.33171844">
-    <name>End of Katy Trail</name>
-    <cmt>trailhead</cmt>
-    <desc>The eastern end of the Katy Trail, marking the finish of the state’s longest rail-to-trail corridor.</desc>
-    <sym>Dot</sym>
-    <type>info</type>
-  </wpt>
   <trk>
     <name>Matt&apos;s Transcontinental</name>
     <trkseg>
@@ -4432,11 +4418,158 @@
       <trkpt lat="38.85866" lon="-90.38403">
         <ele>134.5</ele>
       </trkpt>
-      <trkpt lat="38.87437" lon="-90.3705">
-        <ele>134.1</ele>
+      <trkpt lat="38.858661" lon="-90.384031">
+        <ele>133.97</ele>
       </trkpt>
-      <trkpt lat="38.90348" lon="-90.33137">
-        <ele>134.3</ele>
+      <trkpt lat="38.858663" lon="-90.384028">
+        <ele>133.98</ele>
+      </trkpt>
+      <trkpt lat="38.85873" lon="-90.383958">
+        <ele>133.4</ele>
+      </trkpt>
+      <trkpt lat="38.859154" lon="-90.383563">
+        <ele>133.83</ele>
+      </trkpt>
+      <trkpt lat="38.865391" lon="-90.3783">
+        <ele>134</ele>
+      </trkpt>
+      <trkpt lat="38.866823" lon="-90.377078">
+        <ele>132.94</ele>
+      </trkpt>
+      <trkpt lat="38.87339" lon="-90.371511">
+        <ele>134.76</ele>
+      </trkpt>
+      <trkpt lat="38.873696" lon="-90.371242">
+        <ele>134</ele>
+      </trkpt>
+      <trkpt lat="38.873739" lon="-90.371204">
+        <ele>134</ele>
+      </trkpt>
+      <trkpt lat="38.873774" lon="-90.371167">
+        <ele>133.98</ele>
+      </trkpt>
+      <trkpt lat="38.873897" lon="-90.371036">
+        <ele>134</ele>
+      </trkpt>
+      <trkpt lat="38.873955" lon="-90.370973">
+        <ele>134</ele>
+      </trkpt>
+      <trkpt lat="38.87437" lon="-90.370498">
+        <ele>133.49</ele>
+      </trkpt>
+      <trkpt lat="38.874783" lon="-90.369947">
+        <ele>133.96</ele>
+      </trkpt>
+      <trkpt lat="38.875795" lon="-90.368548">
+        <ele>134</ele>
+      </trkpt>
+      <trkpt lat="38.878186" lon="-90.365222">
+        <ele>132.56</ele>
+      </trkpt>
+      <trkpt lat="38.880213" lon="-90.362396">
+        <ele>133.81</ele>
+      </trkpt>
+      <trkpt lat="38.882793" lon="-90.3588">
+        <ele>132.5</ele>
+      </trkpt>
+      <trkpt lat="38.887859" lon="-90.35179">
+        <ele>132</ele>
+      </trkpt>
+      <trkpt lat="38.889772" lon="-90.349083">
+        <ele>132.34</ele>
+      </trkpt>
+      <trkpt lat="38.889969" lon="-90.348787">
+        <ele>132.87</ele>
+      </trkpt>
+      <trkpt lat="38.890198" lon="-90.348492">
+        <ele>132</ele>
+      </trkpt>
+      <trkpt lat="38.894269" lon="-90.342815">
+        <ele>134.12</ele>
+      </trkpt>
+      <trkpt lat="38.896131" lon="-90.340218">
+        <ele>132.92</ele>
+      </trkpt>
+      <trkpt lat="38.897034" lon="-90.338999">
+        <ele>132.99</ele>
+      </trkpt>
+      <trkpt lat="38.897388" lon="-90.338455">
+        <ele>132.51</ele>
+      </trkpt>
+      <trkpt lat="38.897623" lon="-90.338154">
+        <ele>132</ele>
+      </trkpt>
+      <trkpt lat="38.897881" lon="-90.337883">
+        <ele>132.08</ele>
+      </trkpt>
+      <trkpt lat="38.898317" lon="-90.337229">
+        <ele>132</ele>
+      </trkpt>
+      <trkpt lat="38.89856" lon="-90.336905">
+        <ele>132</ele>
+      </trkpt>
+      <trkpt lat="38.899103" lon="-90.336296">
+        <ele>133</ele>
+      </trkpt>
+      <trkpt lat="38.900433" lon="-90.334961">
+        <ele>132.89</ele>
+      </trkpt>
+      <trkpt lat="38.902597" lon="-90.332703">
+        <ele>132.86</ele>
+      </trkpt>
+      <trkpt lat="38.903077" lon="-90.3321">
+        <ele>132.98</ele>
+      </trkpt>
+      <trkpt lat="38.903116" lon="-90.332033">
+        <ele>132.88</ele>
+      </trkpt>
+      <trkpt lat="38.903405" lon="-90.331516">
+        <ele>132.69</ele>
+      </trkpt>
+      <trkpt lat="38.903478" lon="-90.331368">
+        <ele>132.97</ele>
+      </trkpt>
+      <trkpt lat="38.903539" lon="-90.331428">
+        <ele>133</ele>
+      </trkpt>
+      <trkpt lat="38.903581" lon="-90.331507">
+        <ele>133</ele>
+      </trkpt>
+      <trkpt lat="38.903587" lon="-90.331575">
+        <ele>133</ele>
+      </trkpt>
+      <trkpt lat="38.90358" lon="-90.331696">
+        <ele>133</ele>
+      </trkpt>
+      <trkpt lat="38.903563" lon="-90.331765">
+        <ele>133</ele>
+      </trkpt>
+      <trkpt lat="38.903359" lon="-90.332636">
+        <ele>133</ele>
+      </trkpt>
+      <trkpt lat="38.903269" lon="-90.333036">
+        <ele>133</ele>
+      </trkpt>
+      <trkpt lat="38.903269" lon="-90.333065">
+        <ele>133</ele>
+      </trkpt>
+      <trkpt lat="38.903345" lon="-90.333034">
+        <ele>133</ele>
+      </trkpt>
+      <trkpt lat="38.9034" lon="-90.333031">
+        <ele>132.61</ele>
+      </trkpt>
+      <trkpt lat="38.904364" lon="-90.332539">
+        <ele>131.35</ele>
+      </trkpt>
+      <trkpt lat="38.907368" lon="-90.330913">
+        <ele>131</ele>
+      </trkpt>
+      <trkpt lat="38.908103" lon="-90.330534">
+        <ele>131.88</ele>
+      </trkpt>
+      <trkpt lat="38.908919" lon="-90.330157">
+        <ele>134.17</ele>
       </trkpt>
       <trkpt lat="38.90892" lon="-90.33016">
         <ele>133.9</ele>
