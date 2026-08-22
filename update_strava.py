@@ -14,6 +14,7 @@ REFRESH_RECENT = int(os.environ.get('REFRESH_RECENT', '0'))
 
 TRAINING_START_DATE = "2026-05-09"
 TRIP_START_DATE = "2026-06-01" 
+TRIP_END_DATE = "2026-08-20"  # Set your trip completion date here (YYYY-MM-DD)
 
 def get_ride_weather(lat, lon, date_str):
     url = f"https://api.open-meteo.com/v1/forecast?latitude={lat}&longitude={lon}&start_date={date_str}&end_date={date_str}&daily=temperature_2m_max,temperature_2m_min&temperature_unit=fahrenheit&timezone=auto"
@@ -63,7 +64,7 @@ def main():
     headers = {'Authorization': f'Bearer {access_token}'}
     activities = requests.get("https://www.strava.com/api/v3/athlete/activities?per_page=100", headers=headers, timeout=15).json()
 
-    trip_rides = [a for a in activities if a['start_date_local'][:10] >= TRAINING_START_DATE and a['type'] == 'Ride']
+    trip_rides = [a for a in activities if TRAINING_START_DATE <= a['start_date_local'][:10] <= TRIP_END_DATE and a['type'] == 'Ride']
     trip_rides.sort(key=lambda x: x['start_date_local'])
 
     os.makedirs('_posts', exist_ok=True)
